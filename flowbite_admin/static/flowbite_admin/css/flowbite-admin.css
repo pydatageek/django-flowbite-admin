@@ -202,6 +202,8 @@ img, video {
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .with-sidebar-offset { padding-left: 0; }
 @media (min-width: 640px) { .with-sidebar-offset { padding-left: 16rem; } }
+#logo-sidebar { will-change: transform; }
+@media (min-width: 640px) { #logo-sidebar.sidebar-hidden { transform: translateX(-100%); } }
 .topbar-search { display: none; position: relative; align-items: center; width: 100%; max-width: 20rem; }
 @media (min-width: 640px) { .topbar-search { display: flex; } }
 .topbar-search__icon { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); width: 1.1rem; height: 1.1rem; color: #6b7280; }

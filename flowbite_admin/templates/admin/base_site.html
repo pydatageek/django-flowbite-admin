@@ -3,8 +3,7 @@
 
 {% block extrastyle %}
   {{ block.super }}
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" integrity="sha512-+RdY+VqxGNzcRCjSc5MiNmiRC6L0H944kaW1YHlzTH0jzZMfjNV8iPBUFeCFGXFZ8iDSHPsuacF2nwLxgL8v2Q==" crossorigin="anonymous" referrerpolicy="no-referrer">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" integrity="sha512-9wDG+TfLZNVVRFlE0YyqS/fWznuaCG2lLBVmOAXoJ1Bs8LojRxurx8WcN6iYG3PaY5E9O+V1YxDCEV4VpWw2NQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="{% static 'flowbite_admin/css/flowbite-admin.css' %}">
   <style>
     :root {
       color-scheme: light dark;
@@ -188,7 +187,8 @@
 
 {% block footer %}
   {{ block.super }}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js" integrity="sha512-uaP42gnikIze8ih/7gToYtL6vhfVqlhK/SXxPxq8np5xpoE2mR7BncpsbR9f7DmqDveoxu48UUfZo0fo0RKZxQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="{% static 'flowbite_admin/js/flowbite.min.js' %}"></script>
+  <script src="{% static 'flowbite_admin/js/flowbite-admin.js' %}"></script>
   <script>
     (function () {
       const themeToggleBtn = document.getElementById('theme-toggle');

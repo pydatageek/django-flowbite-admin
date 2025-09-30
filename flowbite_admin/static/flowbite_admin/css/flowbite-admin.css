@@ -291,3 +291,5 @@ img, video {
 .w-full { width: 100%; }
 .z-30 { z-index: 30; }
 .z-40 { z-index: 40; }
+[data-dropdown-toggle][aria-expanded="true"] [data-dropdown-arrow] { transform: rotate(180deg); }
+button[aria-expanded="true"] [data-accordion-icon] { transform: rotate(180deg); }

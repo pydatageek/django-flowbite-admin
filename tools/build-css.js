@@ -238,6 +238,8 @@ function baseDeclaration(base) {
     case 'flex-col': return 'flex-direction: column;';
     case 'flex-wrap': return 'flex-wrap: wrap;';
     case 'flex-1': return 'flex: 1 1 0%;';
+    case 'relative': return 'position: relative;';
+    case 'absolute': return 'position: absolute;';
     case 'items-center': return 'align-items: center;';
     case 'justify-between': return 'justify-content: space-between;';
     case 'justify-center': return 'justify-content: center;';
@@ -267,6 +269,7 @@ function baseDeclaration(base) {
     case 'mx-4': return 'margin-left: 1rem; margin-right: 1rem;';
     case 'mt-1': return 'margin-top: 0.25rem;';
     case 'mt-2': return 'margin-top: 0.5rem;';
+    case 'mt-3': return 'margin-top: 0.75rem;';
     case 'mt-4': return 'margin-top: 1rem;';
     case 'mt-6': return 'margin-top: 1.5rem;';
     case 'mt-20': return 'margin-top: 5rem;';
@@ -317,6 +320,7 @@ function baseDeclaration(base) {
     case 'top-0': return 'top: 0;';
     case 'left-0': return 'left: 0;';
     case 'inset-x-0': return 'left: 0; right: 0;';
+    case 'right-0': return 'right: 0;';
     case 'list-disc': return 'list-style-type: disc;';
     case 'list-none': return 'list-style: none;';
     case 'grid-cols-1': return 'grid-template-columns: repeat(1, minmax(0, 1fr));';

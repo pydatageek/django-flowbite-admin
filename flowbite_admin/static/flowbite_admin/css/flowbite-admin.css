@@ -62,6 +62,7 @@ img, video {
 :root { --fb-focus-ring-width: 2px; --fb-focus-ring-offset: 0; --fb-focus-ring-color: rgba(59, 130, 246, 0.45); --fb-focus-ring-offset-color: transparent; }
 .dark :focus { box-shadow: 0 0 0 var(--fb-focus-ring-width, 2px) var(--fb-focus-ring-color, rgba(59, 130, 246, 0.45)); }
 .-translate-x-full { transform: translateX(-100%); }
+.absolute { position: absolute; }
 .backdrop-blur { backdrop-filter: blur(8px); }
 .bg-blue-50 { background-color: #eff6ff; }
 .bg-blue-600 { background-color: #2563eb; }
@@ -207,6 +208,7 @@ img, video {
 .mt-2 { margin-top: 0.5rem; }
 .mt-20 { margin-top: 5rem; }
 .mt-24 { margin-top: 6rem; }
+.mt-3 { margin-top: 0.75rem; }
 .mt-4 { margin-top: 1rem; }
 .mt-6 { margin-top: 1.5rem; }
 .mx-4 { margin-left: 1rem; margin-right: 1rem; }
@@ -229,6 +231,8 @@ img, video {
 .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
 .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
 .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+.relative { position: relative; }
+.right-0 { right: 0; }
 .ring-1 { box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.4); }
 .ring-gray-100 { box-shadow: 0 0 0 1px #f1f5f9; --fb-focus-ring-color: rgba(241, 245, 249, 0.45); }
 .rounded-2xl { border-radius: 1rem; }

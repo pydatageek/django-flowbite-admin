@@ -32,7 +32,7 @@
 {% block bodyclass %}{{ block.super }} bg-gray-50 dark:bg-gray-900{% endblock %}
 
 {% block header %}
-<header class="fixed inset-x-0 top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur dark:border-gray-700 dark:bg-gray-900/95">
+<header class="fixed inset-x-0 top-0 z-30 border-b border-gray-200 bg-white/95 backdrop-blur dark:border-gray-700 dark:bg-gray-900/95 with-sidebar-offset">
   <div class="mx-auto flex max-w-full items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
     <div class="flex items-center gap-3">
       <button type="button" class="inline-flex items-center rounded-lg border border-gray-200 p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800" data-drawer-target="logo-sidebar" data-drawer-toggle="logo-sidebar" aria-controls="logo-sidebar" aria-label="{% translate 'Toggle navigation' %}">
@@ -45,8 +45,27 @@
         <span class="hidden md:inline">{% firstof site_title site_header _('Flowbite Admin') %}</span>
       </a>
     </div>
-    <div class="flex items-center gap-2">
-      <button id="theme-toggle" type="button" class="inline-flex items-center rounded-lg border border-gray-200 p-2 text-sm text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800" aria-label="{% translate 'Toggle dark mode' %}">
+    <div class="flex flex-1 items-center justify-end gap-3">
+      <form role="search" class="topbar-search" action="{% url 'admin:index' %}" method="get">
+        <label class="sr-only" for="topbar-search">{% translate 'Search' %}</label>
+        <svg class="topbar-search__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18a7.5 7.5 0 006.15-3.35z" />
+        </svg>
+        <input type="search" id="topbar-search" name="q" placeholder="{% translate 'Search' %}" class="topbar-search__input" />
+      </form>
+      <div class="topbar-icon-group">
+        <button type="button" class="topbar-icon-button" aria-label="{% translate 'Show notifications' %}">
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </button>
+        <button type="button" class="topbar-icon-button" aria-label="{% translate 'Open quick actions' %}">
+          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h4M6 4v4m10-2h4m-2-2v4M4 18h4m-2-2v4m10-2h4m-2-2v4" />
+          </svg>
+        </button>
+      </div>
+      <button id="theme-toggle" type="button" class="topbar-icon-button" aria-label="{% translate 'Toggle dark mode' %}">
         <svg id="theme-toggle-dark-icon" class="hidden h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
           <path d="M17.293 13.293a8 8 0 11-10.586-10.586 8.001 8.001 0 1010.586 10.586z" />
         </svg>
@@ -55,31 +74,34 @@
         </svg>
       </button>
       {% if has_permission %}
-      <div class="hidden text-right text-sm sm:block">
-        <p class="font-medium text-gray-900 dark:text-gray-100">{% block welcome-msg %}{% translate 'Welcome,' %} <strong>{% firstof user.get_short_name user.get_username %}</strong>{% endblock %}</p>
-        <div class="mt-1 space-x-2 text-xs text-gray-500 dark:text-gray-400">
-          {% block userlinks %}
-            {% if site_url %}
-              <a class="hover:text-blue-600" href="{{ site_url }}">{% translate 'View site' %}</a>
-            {% endif %}
-            {% if user.is_active and user.is_staff %}
-              {% url 'django-admindocs-docroot' as docsroot %}
-              {% if docsroot %}
-                <span aria-hidden="true">·</span>
-                <a class="hover:text-blue-600" href="{{ docsroot }}">{% translate 'Documentation' %}</a>
+      <div class="topbar-user">
+        <div class="topbar-user__text">
+          <p class="topbar-user__greeting">{% block welcome-msg %}{% translate 'Welcome,' %} <strong>{% firstof user.get_short_name user.get_username %}</strong>{% endblock %}</p>
+          <div class="topbar-user__links">
+            {% block userlinks %}
+              {% if site_url %}
+                <a class="topbar-user__link" href="{{ site_url }}">{% translate 'View site' %}</a>
               {% endif %}
-            {% endif %}
-            {% if user.has_usable_password %}
-              <span aria-hidden="true">·</span>
-              <a class="hover:text-blue-600" href="{% url 'admin:password_change' %}">{% translate 'Change password' %}</a>
-            {% endif %}
-            <span aria-hidden="true">·</span>
-            <form id="logout-form" method="post" action="{% url 'admin:logout' %}" class="inline">
-              {% csrf_token %}
-              <button type="submit" class="font-medium text-blue-600 hover:text-blue-500 focus:outline-none dark:text-blue-400">{% translate 'Log out' %}</button>
-            </form>
-          {% endblock %}
+              {% if user.is_active and user.is_staff %}
+                {% url 'django-admindocs-docroot' as docsroot %}
+                {% if docsroot %}
+                  <span class="topbar-user__divider" aria-hidden="true">·</span>
+                  <a class="topbar-user__link" href="{{ docsroot }}">{% translate 'Documentation' %}</a>
+                {% endif %}
+              {% endif %}
+              {% if user.has_usable_password %}
+                <span class="topbar-user__divider" aria-hidden="true">·</span>
+                <a class="topbar-user__link" href="{% url 'admin:password_change' %}">{% translate 'Change password' %}</a>
+              {% endif %}
+              <span class="topbar-user__divider" aria-hidden="true">·</span>
+              <form id="logout-form" method="post" action="{% url 'admin:logout' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="topbar-user__link topbar-user__logout">{% translate 'Log out' %}</button>
+              </form>
+            {% endblock %}
+          </div>
         </div>
+        <span class="topbar-avatar" aria-hidden="true">{{ user.get_short_name|default:user.get_username|slice:":1"|upper }}</span>
       </div>
       {% endif %}
     </div>

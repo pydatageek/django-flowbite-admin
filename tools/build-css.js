@@ -19,6 +19,67 @@ const stateSelectors = {
   focus: ':focus'
 };
 
+const baseStyles = `/* Flowbite Admin base styles */
+*, ::before, ::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: #e5e7eb;
+}
+::before, ::after {
+  --tw-content: '';
+}
+html {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+body {
+  margin: 0;
+  line-height: inherit;
+  background-color: #f9fafb;
+  color: #1f2937;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-size: inherit;
+  font-weight: inherit;
+}
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+button, input, optgroup, select, textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+}
+button, select {
+  text-transform: none;
+}
+button, [type='button'], [type='reset'], [type='submit'] {
+  -webkit-appearance: button;
+  background-color: transparent;
+  background-image: none;
+}
+table {
+  border-collapse: collapse;
+}
+th {
+  font-weight: 600;
+  text-align: inherit;
+}
+img, svg, video, canvas, audio, iframe, embed, object {
+  display: block;
+  vertical-align: middle;
+}
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+`;
+
 const colorMap = {
   white: '#ffffff',
   'blue-50': '#eff6ff',
@@ -144,7 +205,9 @@ function extractClassesFrom(content) {
     const tokens = match[1].split(/\s+/);
     for (const token of tokens) {
       const cleaned = token.replace(new RegExp('^[' + stripChars + ']+'), '').replace(new RegExp('[' + stripChars + ']+$'), '');
-      if (!cleaned || cleaned.startsWith('if') || cleaned.startsWith('elif') || cleaned.startsWith('endif') || cleaned.startsWith('for') || cleaned.startsWith('endfor')) continue;
+      if (!cleaned) continue;
+      if (cleaned.includes('{') || cleaned.includes('}') || cleaned.includes('%')) continue;
+      if (cleaned.startsWith('if') || cleaned.startsWith('elif') || cleaned.startsWith('endif') || cleaned.startsWith('for') || cleaned.startsWith('endfor')) continue;
       if (!/^[A-Za-z0-9].*[A-Za-z0-9\]]$/.test(cleaned)) continue;
       classes.add(cleaned);
     }
@@ -184,6 +247,7 @@ function baseDeclaration(base) {
     case 'gap-3': return 'gap: 0.75rem;';
     case 'gap-4': return 'gap: 1rem;';
     case 'gap-6': return 'gap: 1.5rem;';
+    case 'gap-8': return 'gap: 2rem;';
     case 'p-2': return 'padding: 0.5rem;';
     case 'p-3': return 'padding: 0.75rem;';
     case 'p-4': return 'padding: 1rem;';
@@ -191,6 +255,7 @@ function baseDeclaration(base) {
     case 'p-8': return 'padding: 2rem;';
     case 'px-3': return 'padding-left: 0.75rem; padding-right: 0.75rem;';
     case 'px-4': return 'padding-left: 1rem; padding-right: 1rem;';
+    case 'px-6': return 'padding-left: 1.5rem; padding-right: 1.5rem;';
     case 'py-1': return 'padding-top: 0.25rem; padding-bottom: 0.25rem;';
     case 'py-2': return 'padding-top: 0.5rem; padding-bottom: 0.5rem;';
     case 'py-3': return 'padding-top: 0.75rem; padding-bottom: 0.75rem;';
@@ -253,9 +318,14 @@ function baseDeclaration(base) {
     case 'left-0': return 'left: 0;';
     case 'inset-x-0': return 'left: 0; right: 0;';
     case 'list-disc': return 'list-style-type: disc;';
+    case 'grid-cols-1': return 'grid-template-columns: repeat(1, minmax(0, 1fr));';
     case 'object-tools': return 'display: flex; gap: 0.5rem;';
     case 'changelist-form-container': return 'overflow-x: auto;';
     case 'cancel-link': return 'display: inline-block; margin-left: 1rem; color: #4b5563;';
+  }
+  if (base.startsWith('grid-cols-[')) {
+    const value = base.slice('grid-cols-['.length, -1);
+    return `grid-template-columns: ${value.replace(/,/g, ' ')};`;
   }
   if (base.startsWith('bg-')) {
     if (base.includes('/')) {
@@ -285,9 +355,27 @@ function baseDeclaration(base) {
   if (base === 'ring-1') {
     return 'box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.4);';
   }
+  if (base === 'ring-2') {
+    return 'box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.4);';
+  }
+  if (base === 'ring-offset-2') {
+    return '--fb-focus-ring-offset: 2px;';
+  }
+  if (base.startsWith('ring-offset-')) {
+    const color = colorMap[base.replace('ring-offset-', '')];
+    if (color) return `--fb-focus-ring-offset-color: ${color};`;
+  }
   if (base.startsWith('ring-')) {
-    const color = colorMap[base.replace('ring-', '')];
-    if (color) return `box-shadow: 0 0 0 1px ${color};`;
+    const colorKey = base.replace('ring-', '');
+    const color = colorMap[colorKey];
+    const focusColor = rgbaFromHex(colorKey, 0.45);
+    if (color) {
+      const focusPart = focusColor ? ` --fb-focus-ring-color: ${focusColor};` : '';
+      return `box-shadow: 0 0 0 1px ${color};${focusPart}`;
+    }
+  }
+  if (base === 'outline-none') {
+    return 'outline: 2px solid transparent; outline-offset: 2px;';
   }
   return null;
 }
@@ -304,24 +392,14 @@ function buildClassRule(cls) {
   const base = segments.pop();
   const prefixes = segments;
 
-  if (base.startsWith('space-y-')) {
-    const amount = base.replace('space-y-', '');
+  if (base.startsWith('space-y-') || base.startsWith('space-x-')) {
+    const amount = base.replace('space-y-', '').replace('space-x-', '');
     const value = spacing(amount);
     if (!value) return [];
     let selector = `.${escapeClass(cls)}`;
     if (prefixes.includes('dark')) selector = `.dark ${selector}`;
-    let rule = buildSpaceRule(selector, 'y', value);
-    const responsive = prefixes.find(p => responsiveBreakpoints[p]);
-    if (responsive) {
-      rule = `@media ${responsiveBreakpoints[responsive]} { ${rule} }`;
-    }
-    return [rule];
-  }
-
-  if (base === 'space-x-2') {
-    let selector = `.${escapeClass(cls)}`;
-    if (prefixes.includes('dark')) selector = `.dark ${selector}`;
-    let rule = buildSpaceRule(selector, 'x', '0.5rem');
+    const axis = base.startsWith('space-y-') ? 'y' : 'x';
+    let rule = buildSpaceRule(selector, axis, value);
     const responsive = prefixes.find(p => responsiveBreakpoints[p]);
     if (responsive) {
       rule = `@media ${responsiveBreakpoints[responsive]} { ${rule} }`;
@@ -442,6 +520,9 @@ function buildClassRule(cls) {
       if (rest === 'px-8') {
         return [`@media ${responsiveBreakpoints[prefix]} { .${escapeClass(cls)} { padding-left: 2rem; padding-right: 2rem; } }`];
       }
+      if (rest === 'grid-cols-[2fr,1fr]') {
+        return [`@media ${responsiveBreakpoints[prefix]} { .${escapeClass(cls)} { grid-template-columns: 2fr 1fr; } }`];
+      }
       if (rest === 'block') {
         return [`@media ${responsiveBreakpoints[prefix]} { .${escapeClass(cls)} { display: block; } }`];
       }
@@ -490,6 +571,7 @@ function buildCss() {
     }
   }
   const rules = [];
+  rules.push(baseStyles);
   rules.push('/* Generated utility classes */');
   rules.push(':root { --fb-focus-ring-width: 2px; --fb-focus-ring-offset: 0; --fb-focus-ring-color: rgba(59, 130, 246, 0.45); --fb-focus-ring-offset-color: transparent; }');
   rules.push('.dark :focus { box-shadow: 0 0 0 var(--fb-focus-ring-width, 2px) var(--fb-focus-ring-color, rgba(59, 130, 246, 0.45)); }');

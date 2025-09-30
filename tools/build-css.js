@@ -113,6 +113,8 @@ const colorMap = {
   'red-900': '#7f1d1d',
   'yellow-50': '#fffbeb',
   'yellow-200': '#fde68a',
+  'yellow-300': '#fcd34d',
+  'yellow-400': '#fbbf24',
   'yellow-800': '#92400e',
   'yellow-900': '#78350f'
 };

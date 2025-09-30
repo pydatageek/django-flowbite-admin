@@ -278,11 +278,13 @@ function baseDeclaration(base) {
     case 'mb-6': return 'margin-bottom: 1.5rem;';
     case 'min-h-[70vh]': return 'min-height: 70vh;';
     case 'w-full': return 'width: 100%;';
+    case 'w-auto': return 'width: auto;';
     case 'w-64': return 'width: 16rem;';
     case 'w-10': return 'width: 2.5rem;';
     case 'w-5': return 'width: 1.25rem;';
     case 'w-4': return 'width: 1rem;';
     case 'h-10': return 'height: 2.5rem;';
+    case 'h-8': return 'height: 2rem;';
     case 'h-5': return 'height: 1.25rem;';
     case 'h-4': return 'height: 1rem;';
     case 'h-full': return 'height: 100%;';

@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSidebarDrawer();
   initSidebarAccordion();
   initUserMenu();
+  initFullscreenToggle();
 });
 
 function initSidebarDrawer() {
@@ -162,4 +163,51 @@ function initUserMenu() {
       closeMenu();
     }
   });
+}
+
+function initFullscreenToggle() {
+  const button = document.querySelector('[data-action="toggle-fullscreen"]');
+  if (!button) {
+    return;
+  }
+
+  const labels = {
+    enter: button.getAttribute('data-fullscreen-label-enter') || 'Enter fullscreen',
+    exit: button.getAttribute('data-fullscreen-label-exit') || 'Exit fullscreen',
+  };
+
+  if (!document.documentElement.requestFullscreen || !document.exitFullscreen || !document.fullscreenEnabled) {
+    button.setAttribute('aria-pressed', 'false');
+    button.setAttribute('aria-label', labels.enter);
+    button.setAttribute('disabled', 'disabled');
+    button.classList.add('cursor-not-allowed', 'opacity-60');
+    return;
+  }
+
+  const updateButtonState = () => {
+    const isFullscreen = Boolean(document.fullscreenElement);
+    button.setAttribute('aria-pressed', String(isFullscreen));
+    button.setAttribute('aria-label', isFullscreen ? labels.exit : labels.enter);
+    button.classList.toggle('is-fullscreen', isFullscreen);
+  };
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {
+        updateButtonState();
+      });
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {
+        updateButtonState();
+      });
+    }
+  };
+
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    toggleFullscreen();
+  });
+
+  document.addEventListener('fullscreenchange', updateButtonState);
+  updateButtonState();
 }

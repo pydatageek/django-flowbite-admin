@@ -1,0 +1,9 @@
+{
+  "name": "django-flowbite-admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build:css": "node tools/build-css.js",
+    "build": "npm run build:css"
+  }
+}

@@ -318,6 +318,7 @@ function baseDeclaration(base) {
     case 'left-0': return 'left: 0;';
     case 'inset-x-0': return 'left: 0; right: 0;';
     case 'list-disc': return 'list-style-type: disc;';
+    case 'list-none': return 'list-style: none;';
     case 'grid-cols-1': return 'grid-template-columns: repeat(1, minmax(0, 1fr));';
     case 'object-tools': return 'display: flex; gap: 0.5rem;';
     case 'changelist-form-container': return 'overflow-x: auto;';

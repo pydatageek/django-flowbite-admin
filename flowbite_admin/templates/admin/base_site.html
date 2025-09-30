@@ -48,7 +48,7 @@
     <div class="flex flex-1 items-center justify-end gap-3">
       <form role="search" class="topbar-search" action="{% url 'admin:index' %}" method="get">
         <label class="sr-only" for="topbar-search">{% translate 'Search' %}</label>
-        <svg class="topbar-search__icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <svg class="h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18a7.5 7.5 0 006.15-3.35z" />
         </svg>
         <input type="search" id="topbar-search" name="q" placeholder="{% translate 'Search' %}" class="topbar-search__input" />

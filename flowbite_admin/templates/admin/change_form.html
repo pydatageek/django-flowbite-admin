@@ -1,2 +1,125 @@
-<!-- change form -->
-{% block content %}<form method='post'>{% csrf_token %}{{ adminform }}</form>{% endblock %}
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block title %}{% if errors %}{% translate "Error:" %} {% endif %}{{ block.super }}{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <script src="{% url 'admin:jsi18n' %}"></script>
+  {{ adminform.media }}
+  {{ media }}
+{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/forms.css' %}">
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-form{% endblock %}
+
+{% if not is_popup %}
+  {% block breadcrumbs %}
+    <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+      <li>
+        <a class="inline-flex items-center gap-1 rounded-lg px-3 py-1 font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white" href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+      </li>
+      <li aria-hidden="true" class="text-gray-400">/</li>
+      <li>
+        <a class="rounded-lg px-3 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white" href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+      </li>
+      <li aria-hidden="true" class="text-gray-400">/</li>
+      <li>
+        {% if has_view_permission %}
+          <a class="rounded-lg px-3 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white" href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+        {% else %}
+          <span class="rounded-lg px-3 py-1 text-gray-400 dark:text-gray-500">{{ opts.verbose_name_plural|capfirst }}</span>
+        {% endif %}
+      </li>
+      <li aria-hidden="true" class="text-gray-400">/</li>
+      <li class="rounded-lg bg-blue-50 px-3 py-1 font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-200">
+        {% if add %}
+          {% blocktranslate with name=opts.verbose_name %}Add {{ name }}{% endblocktranslate %}
+        {% else %}
+          {{ original|truncatewords:"18" }}
+        {% endif %}
+      </li>
+    </ol>
+  {% endblock %}
+{% endif %}
+
+{% block content %}
+  <div id="content-main" class="space-y-8">
+    {% block object-tools %}
+      {% if change and not is_popup %}
+        <ul class="object-tools flex flex-wrap items-center justify-end gap-2 text-sm font-medium">
+          {% block object-tools-items %}
+            {% change_form_object_tools %}
+          {% endblock %}
+        </ul>
+      {% endif %}
+    {% endblock %}
+
+    <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}{% if form_url %}action="{{ form_url }}" {% endif %}method="post" id="{{ opts.model_name }}_form" novalidate class="space-y-6">
+      {% csrf_token %}
+      {% block form_top %}{% endblock %}
+
+      {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1">{% endif %}
+      {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">{% endif %}
+
+      {% if save_on_top %}
+        {% block submit_buttons_top %}
+          <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100 dark:bg-gray-800 dark:ring-gray-700">
+            {% submit_row %}
+          </div>
+        {% endblock %}
+      {% endif %}
+
+      {% if errors %}
+        <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
+          <p>
+            {% blocktranslate count counter=errors|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
+          </p>
+          {{ adminform.form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      {% block field_sets %}
+        {% for fieldset in adminform %}
+          <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            {% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}
+          </div>
+        {% endfor %}
+      {% endblock %}
+
+      {% block after_field_sets %}{% endblock %}
+
+      {% block inline_field_sets %}
+        {% for inline_admin_formset in inline_admin_formsets %}
+          <div class="rounded-2xl border border-dashed border-gray-300 bg-white p-6 shadow-sm dark:border-gray-600 dark:bg-gray-800">
+            {% include inline_admin_formset.opts.template %}
+          </div>
+        {% endfor %}
+      {% endblock %}
+
+      {% block after_related_objects %}{% endblock %}
+
+      {% block submit_buttons_bottom %}
+        <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-gray-100 dark:bg-gray-800 dark:ring-gray-700">
+          {% submit_row %}
+        </div>
+      {% endblock %}
+
+      {% block admin_change_form_document_ready %}
+        <script id="django-admin-form-add-constants"
+                src="{% static 'admin/js/change_form.js' %}"
+                {% if adminform and add %}
+                  data-model-name="{{ opts.model_name }}"
+                {% endif %}
+                async>
+        </script>
+      {% endblock %}
+
+      {% prepopulated_fields_js %}
+    </form>
+  </div>
+{% endblock %}

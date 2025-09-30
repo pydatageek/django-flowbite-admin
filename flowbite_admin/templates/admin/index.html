@@ -1,1 +1,75 @@
-<!-- index page -->
+{% extends "admin/base_site.html" %}
+{% load i18n static log %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+{% endblock %}
+
+{% block coltype %}colMS mt-24 space-y-6 px-4 pb-12 sm:ml-64 sm:px-8{% endblock %}
+
+{% block bodyclass %}{{ block.super }} dashboard{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block content %}
+  <div id="content-main" class="space-y-8">
+    <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">{% translate 'Welcome back' %}</h1>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{% translate 'Choose an application to manage from the list below.' %}</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <form method="post" action="{% url 'admin:logout' %}" class="inline">
+            {% csrf_token %}
+            <button type="submit" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">{% translate 'Log out' %}</button>
+          </form>
+          {% if site_url %}
+            <a href="{{ site_url }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">{% translate 'View site' %}</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-[2fr,1fr]">
+      <div class="space-y-6">
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+        </div>
+      </div>
+      <aside class="space-y-6">
+        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{% translate 'Recent actions' %}</h2>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{% translate 'My actions' %}</p>
+          {% get_admin_log 10 as admin_log for_user user %}
+          {% if not admin_log %}
+            <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">{% translate 'None available' %}</p>
+          {% else %}
+            <ul class="mt-4 space-y-3">
+              {% for entry in admin_log %}
+                <li class="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700 {% if entry.is_addition %}bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-200{% elif entry.is_change %}bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200{% elif entry.is_deletion %}bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-200{% else %}bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-200{% endif %}">
+                  <span class="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    {% if entry.is_addition %}{% translate 'Added' %}{% elif entry.is_change %}{% translate 'Changed' %}{% elif entry.is_deletion %}{% translate 'Deleted' %}{% endif %}
+                  </span>
+                  {% if entry.is_deletion or not entry.get_admin_url %}
+                    <span class="font-medium">{{ entry.object_repr }}</span>
+                  {% else %}
+                    <a class="font-medium hover:underline" href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                  {% endif %}
+                  <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {% if entry.content_type %}
+                      {% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}
+                    {% else %}
+                      {% translate 'Unknown content' %}
+                    {% endif %}
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </aside>
+    </div>
+  </div>
+{% endblock %}

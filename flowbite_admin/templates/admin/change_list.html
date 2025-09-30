@@ -1,2 +1,149 @@
-<!-- change list -->
-{% block content %}{% result_list cl %}{% endblock %}
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block title %}{% if cl.formset and cl.formset.errors %}{% translate "Error:" %} {% endif %}{{ block.super }}{% endblock %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'admin/css/changelists.css' %}">
+  {% if cl.formset %}
+    <link rel="stylesheet" href="{% static 'admin/css/forms.css' %}">
+  {% endif %}
+  {% if cl.formset or action_form %}
+    <script src="{% url 'admin:jsi18n' %}"></script>
+  {% endif %}
+  {{ media.css }}
+  {% if not actions_on_top and not actions_on_bottom %}
+    <style>#changelist table thead th:first-child {width: inherit}</style>
+  {% endif %}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {{ media.js }}
+  <script src="{% static 'admin/js/filters.js' %}" defer></script>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
+
+{% if not is_popup %}
+  {% block breadcrumbs %}
+    <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+      <li>
+        <a class="inline-flex items-center gap-1 rounded-lg px-3 py-1 font-medium text-gray-600 hover:bg-blue-50 hover:text-blue-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white" href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
+      </li>
+      <li aria-hidden="true" class="text-gray-400">/</li>
+      <li>
+        <a class="rounded-lg px-3 py-1 text-gray-600 hover:bg-blue-50 hover:text-blue-700 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white" href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a>
+      </li>
+      <li aria-hidden="true" class="text-gray-400">/</li>
+      <li class="rounded-lg bg-blue-50 px-3 py-1 font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-200">{{ cl.opts.verbose_name_plural|capfirst }}</li>
+    </ol>
+  {% endblock %}
+{% endif %}
+
+{% block coltype %}{% endblock %}
+
+{% block content %}
+  <div id="content-main" class="space-y-6">
+    {% block object-tools %}
+      <ul class="object-tools flex flex-wrap items-center justify-end gap-2 text-sm font-medium">
+        {% block object-tools-items %}
+          {% change_list_object_tools %}
+        {% endblock %}
+      </ul>
+    {% endblock %}
+
+    {% if cl.formset and cl.formset.errors %}
+      <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
+        <p>{% blocktranslate count counter=cl.formset.total_error_count %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}</p>
+        {{ cl.formset.non_form_errors }}
+      </div>
+    {% endif %}
+
+    <div class="flex flex-col gap-6 lg:flex-row">
+      <div class="flex-1 space-y-6">
+        <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            {% block search %}
+              <div class="md:w-1/2">{% search_form cl %}</div>
+            {% endblock %}
+            {% block date_hierarchy %}
+              {% if cl.date_hierarchy %}
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  {% date_hierarchy cl %}
+                </div>
+              {% endif %}
+            {% endblock %}
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <div class="changelist-form-container overflow-hidden">
+            <form id="changelist-form" method="post"{% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>
+              {% csrf_token %}
+              {% if cl.formset %}
+                <div class="hidden">{{ cl.formset.management_form }}</div>
+              {% endif %}
+
+              {% block result_list %}
+                <div class="space-y-4">
+                  {% if action_form and actions_on_top and cl.show_admin_actions %}
+                    <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
+                      {% admin_actions %}
+                    </div>
+                  {% endif %}
+                  <div class="overflow-x-auto">
+                    {% result_list cl %}
+                  </div>
+                  {% if action_form and actions_on_bottom and cl.show_admin_actions %}
+                    <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
+                      {% admin_actions %}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endblock %}
+
+              {% block pagination %}
+                <div class="border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+                  {% pagination cl %}
+                </div>
+              {% endblock %}
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {% block filters %}
+        {% if cl.has_filters %}
+          <div class="w-full shrink-0 space-y-4 lg:w-72">
+            <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+              <div class="flex items-center justify-between">
+                <h2 id="changelist-filter-header" class="text-sm font-semibold text-gray-700 dark:text-gray-200">{% translate 'Filter' %}</h2>
+                {% if cl.is_facets_optional or cl.has_active_filters %}
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {% if cl.is_facets_optional %}
+                      <h3>
+                        {% if cl.add_facets %}<a class="hover:text-blue-600" href="{{ cl.remove_facet_link }}">{% translate "Hide counts" %}</a>{% else %}<a class="hover:text-blue-600" href="{{ cl.add_facet_link }}">{% translate "Show counts" %}</a>{% endif %}
+                      </h3>
+                    {% endif %}
+                    {% if cl.has_active_filters %}
+                      <h3><a class="hover:text-blue-600" href="{{ cl.clear_all_filters_qs }}">&#10006; {% translate "Clear all filters" %}</a></h3>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="mt-4 space-y-4" id="changelist-filter" aria-labelledby="changelist-filter-header">
+                {% for spec in cl.filter_specs %}
+                  <div class="rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+                    {% admin_list_filter cl spec %}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      {% endblock %}
+    </div>
+  </div>
+{% endblock %}

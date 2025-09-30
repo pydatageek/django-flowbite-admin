@@ -61,6 +61,7 @@ img, video {
 /* Generated utility classes */
 :root { --fb-focus-ring-width: 2px; --fb-focus-ring-offset: 0; --fb-focus-ring-color: rgba(59, 130, 246, 0.45); --fb-focus-ring-offset-color: transparent; }
 .dark :focus { box-shadow: 0 0 0 var(--fb-focus-ring-width, 2px) var(--fb-focus-ring-color, rgba(59, 130, 246, 0.45)); }
+.-translate-x-full { transform: translateX(-100%); }
 .backdrop-blur { backdrop-filter: blur(8px); }
 .bg-blue-50 { background-color: #eff6ff; }
 .bg-blue-600 { background-color: #2563eb; }

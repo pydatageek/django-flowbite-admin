@@ -208,7 +208,7 @@ function extractClassesFrom(content) {
       if (!cleaned) continue;
       if (cleaned.includes('{') || cleaned.includes('}') || cleaned.includes('%')) continue;
       if (cleaned.startsWith('if') || cleaned.startsWith('elif') || cleaned.startsWith('endif') || cleaned.startsWith('for') || cleaned.startsWith('endfor')) continue;
-      if (!/^[A-Za-z0-9].*[A-Za-z0-9\]]$/.test(cleaned)) continue;
+      if (!/^-?[A-Za-z0-9].*[A-Za-z0-9\]]$/.test(cleaned)) continue;
       classes.add(cleaned);
     }
   }

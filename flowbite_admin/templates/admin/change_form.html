@@ -191,7 +191,7 @@
         </script>
         <script>
           (function () {
-            function setupFieldsetTabs(container) {
+            function setupFieldsetTabs(container, hasFlowbite) {
               var toggle = container.querySelector('[data-tabs-toggle]');
               if (!toggle) {
                 return;
@@ -231,7 +231,7 @@
                 return container.querySelector(targetSelector);
               }
 
-              function activate(button) {
+              function activateManually(button) {
                 var targetPanel = findPanel(button);
                 if (!targetPanel) {
                   return;
@@ -248,12 +248,14 @@
                 });
               }
 
-              Array.prototype.forEach.call(tabButtons, function (button) {
-                button.addEventListener('click', function (event) {
-                  event.preventDefault();
-                  activate(button);
+              if (!hasFlowbite) {
+                Array.prototype.forEach.call(tabButtons, function (button) {
+                  button.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    activateManually(button);
+                  });
                 });
-              });
+              }
 
               var errorPanel = null;
               if (typeof Array.prototype.find === 'function') {
@@ -282,8 +284,16 @@
                 initialButton = container.querySelector('[role="tab"][aria-selected="true"]') || tabButtons[0];
               }
 
-              if (initialButton) {
-                activate(initialButton);
+              if (!initialButton) {
+                return;
+              }
+
+              if (hasFlowbite) {
+                if (typeof initialButton.click === 'function') {
+                  initialButton.click();
+                }
+              } else {
+                activateManually(initialButton);
               }
             }
 
@@ -292,13 +302,27 @@
               if (!containers.length) {
                 return;
               }
-              Array.prototype.forEach.call(containers, setupFieldsetTabs);
+
+              var hasFlowbite = typeof window.initFlowbite === 'function';
+              if (hasFlowbite) {
+                window.initFlowbite();
+              }
+
+              Array.prototype.forEach.call(containers, function (container) {
+                setupFieldsetTabs(container, hasFlowbite);
+              });
+            }
+
+            function onReady() {
+              initFieldsetTabs();
             }
 
             if (document.readyState === 'loading') {
-              document.addEventListener('DOMContentLoaded', initFieldsetTabs);
+              document.addEventListener('DOMContentLoaded', function () {
+                window.setTimeout(onReady, 0);
+              });
             } else {
-              initFieldsetTabs();
+              window.setTimeout(onReady, 0);
             }
           })();
         </script>

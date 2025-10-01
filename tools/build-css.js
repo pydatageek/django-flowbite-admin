@@ -179,6 +179,26 @@ img, video {
 .dark .topbar-avatar {
   background: linear-gradient(135deg, #1d4ed8, #1f2937);
 }
+.with-sidebar-offset {
+  left: 0;
+  right: 0;
+  width: 100%;
+  padding-left: 0;
+  margin-left: 0;
+  transition: left 0.3s ease, margin-left 0.3s ease, padding-left 0.3s ease;
+}
+@media (min-width: 640px) {
+  .with-sidebar-offset {
+    padding-left: 16rem;
+  }
+}
+@media (min-width: 1024px) {
+  .with-sidebar-offset {
+    padding-left: 0;
+    margin-left: 16rem;
+    width: calc(100% - 16rem);
+  }
+}
 `;
 
 const colorMap = {
@@ -429,7 +449,7 @@ function baseDeclaration(base) {
     case 'list-disc': return 'list-style-type: disc;';
     case 'list-none': return 'list-style: none;';
     case 'grid-cols-1': return 'grid-template-columns: repeat(1, minmax(0, 1fr));';
-    case 'object-tools': return 'display: flex; gap: 0.5rem;';
+    case 'object-tools': return 'display: flex; gap: 0.5rem; list-style: none; margin: 0; padding: 0;';
     case 'changelist-form-container': return 'overflow-x: auto;';
     case 'cancel-link': return 'display: inline-block; margin-left: 1rem; color: #4b5563;';
   }

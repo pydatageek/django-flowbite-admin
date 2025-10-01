@@ -158,7 +158,6 @@ img, video {
 .dark .topbar-avatar {
   background: linear-gradient(135deg, #1d4ed8, #1f2937);
 }
-
 .with-sidebar-offset {
   left: 0;
   right: 0;
@@ -167,13 +166,11 @@ img, video {
   margin-left: 0;
   transition: left 0.3s ease, margin-left 0.3s ease, padding-left 0.3s ease;
 }
-
 @media (min-width: 640px) {
   .with-sidebar-offset {
     padding-left: 16rem;
   }
 }
-
 @media (min-width: 1024px) {
   .with-sidebar-offset {
     padding-left: 0;
@@ -339,7 +336,7 @@ img, video {
 .mt-6 { margin-top: 1.5rem; }
 .mx-4 { margin-left: 1rem; margin-right: 1rem; }
 .mx-auto { margin-left: auto; margin-right: auto; }
-.object-tools { display: flex; gap: 0.5rem; }
+.object-tools { display: flex; gap: 0.5rem; list-style: none; margin: 0; padding: 0; }
 .overflow-hidden { overflow: hidden; }
 .overflow-x-auto { overflow-x: auto; }
 .overflow-y-auto { overflow-y: auto; }

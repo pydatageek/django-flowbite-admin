@@ -78,6 +78,107 @@ img, video {
   max-width: 100%;
   height: auto;
 }
+
+/* Topbar component styles */
+.topbar-search {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 24rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+  background-color: #f1f5f9;
+  border: 1px solid #e5e7eb;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.topbar-search:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+.topbar-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: none;
+  background-color: transparent;
+  font-size: 0.875rem;
+  color: #1f2937;
+}
+.topbar-search__input::placeholder {
+  color: #9ca3af;
+}
+.topbar-icon-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.topbar-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  color: #6b7280;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.topbar-icon-button:hover {
+  background-color: #f1f5f9;
+  border-color: #d1d5db;
+  color: #111827;
+}
+.topbar-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  color: #ffffff;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.dark .topbar-search {
+  background-color: rgba(17, 24, 39, 0.6);
+  border-color: #374151;
+}
+.dark .topbar-search:focus-within {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.15);
+}
+.dark .topbar-search__input {
+  color: #f9fafb;
+}
+.dark .topbar-search__input::placeholder {
+  color: #6b7280;
+}
+.dark .topbar-icon-button {
+  border-color: #374151;
+  background-color: rgba(55, 65, 81, 0.4);
+  color: #e5e7eb;
+}
+.dark .topbar-icon-button:hover {
+  background-color: rgba(75, 85, 99, 0.5);
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+.dark .topbar-avatar {
+  background: linear-gradient(135deg, #1d4ed8, #1f2937);
+}
 `;
 
 const colorMap = {

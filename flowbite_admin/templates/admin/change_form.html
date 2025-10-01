@@ -84,11 +84,83 @@
       {% endif %}
 
       {% block field_sets %}
-        {% for fieldset in adminform %}
-          <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            {% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}
-          </div>
-        {% endfor %}
+        {% with total_fieldsets=adminform|length %}
+          {% if total_fieldsets > 1 %}
+            <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800" data-admin-fieldset-tabs>
+              <div class="border-b border-gray-200 px-6 pt-6 dark:border-gray-700">
+                <ul
+                  class="flex flex-wrap gap-2 text-sm font-medium text-gray-600 dark:text-gray-300"
+                  role="tablist"
+                  data-tabs-toggle="#admin-fieldset-tab-panels"
+                  data-tabs-active-classes="text-blue-700 bg-blue-50 dark:bg-blue-500/20 dark:text-blue-200"
+                  data-tabs-inactive-classes="text-gray-600 hover:text-blue-700 dark:text-gray-300 dark:hover:text-white"
+                >
+                  {% for fieldset in adminform %}
+                    {% with heading=fieldset.name %}
+                      {% with slug_base=heading|default_if_none:''|slugify %}
+                        {% if slug_base %}
+                          {% with panel_id=slug_base|add:'-'|add:forloop.counter %}
+                        {% else %}
+                          {% with panel_id='fieldset-'|add:forloop.counter %}
+                        {% endif %}
+                            {% with tab_id=panel_id|add:'-tab' %}
+                              <li role="presentation">
+                                <button
+                                  class="rounded-lg px-4 py-2 {% if forloop.first %}text-blue-700 bg-blue-50 dark:bg-blue-500/20 dark:text-blue-200{% else %}text-gray-600 hover:text-blue-700 dark:text-gray-300 dark:hover:text-white{% endif %}"
+                                  id="{{ tab_id }}"
+                                  type="button"
+                                  role="tab"
+                                  aria-controls="{{ panel_id }}"
+                                  aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                                  data-tabs-target="#{{ panel_id }}"
+                                >
+                                  {% if heading %}
+                                    {{ heading }}
+                                  {% else %}
+                                    {% blocktranslate with counter=forloop.counter %}Section {{ counter }}{% endblocktranslate %}
+                                  {% endif %}
+                                </button>
+                              </li>
+                            {% endwith %}
+                          {% endwith %}
+                      {% endwith %}
+                    {% endwith %}
+                  {% endfor %}
+                </ul>
+              </div>
+              <div id="admin-fieldset-tab-panels" class="pb-6">
+                {% for fieldset in adminform %}
+                  {% with heading=fieldset.name %}
+                    {% with slug_base=heading|default_if_none:''|slugify %}
+                      {% if slug_base %}
+                        {% with panel_id=slug_base|add:'-'|add:forloop.counter %}
+                      {% else %}
+                        {% with panel_id='fieldset-'|add:forloop.counter %}
+                      {% endif %}
+                          {% with tab_id=panel_id|add:'-tab' %}
+                            <div
+                              id="{{ panel_id }}"
+                              role="tabpanel"
+                              aria-labelledby="{{ tab_id }}"
+                              class="{% if not forloop.first %}hidden {% endif %}p-6"
+                            >
+                              {% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}
+                            </div>
+                          {% endwith %}
+                        {% endwith %}
+                    {% endwith %}
+                  {% endwith %}
+                {% endfor %}
+              </div>
+            </div>
+          {% else %}
+            {% for fieldset in adminform %}
+              <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                {% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
       {% endblock %}
 
       {% block after_field_sets %}{% endblock %}
@@ -116,6 +188,119 @@
                   data-model-name="{{ opts.model_name }}"
                 {% endif %}
                 async>
+        </script>
+        <script>
+          (function () {
+            function setupFieldsetTabs(container) {
+              var toggle = container.querySelector('[data-tabs-toggle]');
+              if (!toggle) {
+                return;
+              }
+
+              var tabButtons = toggle.querySelectorAll('[role="tab"][data-tabs-target]');
+              if (!tabButtons.length) {
+                return;
+              }
+
+              var panels = container.querySelectorAll('[role="tabpanel"]');
+              if (!panels.length) {
+                return;
+              }
+
+              var activeClasses = (toggle.getAttribute('data-tabs-active-classes') || '')
+                .split(/\s+/)
+                .filter(Boolean);
+              var inactiveClasses = (toggle.getAttribute('data-tabs-inactive-classes') || '')
+                .split(/\s+/)
+                .filter(Boolean);
+
+              function applyButtonClasses(button, isActive) {
+                activeClasses.forEach(function (className) {
+                  button.classList.toggle(className, isActive);
+                });
+                inactiveClasses.forEach(function (className) {
+                  button.classList.toggle(className, !isActive);
+                });
+              }
+
+              function findPanel(button) {
+                var targetSelector = button.getAttribute('data-tabs-target');
+                if (!targetSelector) {
+                  return null;
+                }
+                return container.querySelector(targetSelector);
+              }
+
+              function activate(button) {
+                var targetPanel = findPanel(button);
+                if (!targetPanel) {
+                  return;
+                }
+
+                Array.prototype.forEach.call(tabButtons, function (tab) {
+                  var isActive = tab === button;
+                  tab.setAttribute('aria-selected', String(isActive));
+                  applyButtonClasses(tab, isActive);
+                });
+
+                Array.prototype.forEach.call(panels, function (panel) {
+                  panel.classList.toggle('hidden', panel !== targetPanel);
+                });
+              }
+
+              Array.prototype.forEach.call(tabButtons, function (button) {
+                button.addEventListener('click', function (event) {
+                  event.preventDefault();
+                  activate(button);
+                });
+              });
+
+              var errorPanel = null;
+              if (typeof Array.prototype.find === 'function') {
+                errorPanel = Array.prototype.find.call(panels, function (panel) {
+                  return panel.querySelector('.errorlist, .errornote, [aria-invalid="true"]');
+                });
+              } else {
+                for (var i = 0; i < panels.length; i += 1) {
+                  if (panels[i].querySelector('.errorlist, .errornote, [aria-invalid="true"]')) {
+                    errorPanel = panels[i];
+                    break;
+                  }
+                }
+              }
+
+              var initialButton = null;
+              if (errorPanel && errorPanel.id) {
+                Array.prototype.forEach.call(tabButtons, function (button) {
+                  if (button.getAttribute('data-tabs-target') === '#' + errorPanel.id) {
+                    initialButton = button;
+                  }
+                });
+              }
+
+              if (!initialButton) {
+                initialButton = container.querySelector('[role="tab"][aria-selected="true"]') || tabButtons[0];
+              }
+
+              if (initialButton) {
+                activate(initialButton);
+              }
+            }
+
+            function initFieldsetTabs() {
+              var containers = document.querySelectorAll('[data-admin-fieldset-tabs]');
+              if (!containers.length) {
+                return;
+              }
+              Array.prototype.forEach.call(containers, setupFieldsetTabs);
+            }
+
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', initFieldsetTabs);
+            } else {
+              initFieldsetTabs();
+            }
+          })();
         </script>
       {% endblock %}
 

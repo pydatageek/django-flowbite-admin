@@ -1,0 +1,103 @@
+{% load i18n %}
+{% if result_hidden_fields %}
+  <div class="hidden">
+    {% for item in result_hidden_fields %}{{ item }}{% endfor %}
+  </div>
+{% endif %}
+{% if results %}
+  <div class="results overflow-hidden rounded-lg">
+    <table
+      id="result_list"
+      class="min-w-full bg-white text-left text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300 [&_input#action-toggle]:h-4 [&_input#action-toggle]:w-4 [&_input#action-toggle]:rounded [&_input#action-toggle]:border-gray-300 [&_input#action-toggle]:text-blue-600 [&_input#action-toggle]:focus:ring-blue-500 [&_td.action-checkbox>input]:h-4 [&_td.action-checkbox>input]:w-4 [&_td.action-checkbox>input]:rounded [&_td.action-checkbox>input]:border-gray-300 [&_td.action-checkbox>input]:text-blue-600 [&_td.action-checkbox>input]:focus:ring-blue-500 [&_td]:align-middle [&_th]:align-middle [&_th.action-checkbox-column]:w-12 [&_th.action-checkbox-column]:px-4 [&_th.action-checkbox-column]:text-center [&_td.action-checkbox]:w-12 [&_td.action-checkbox]:px-4 [&_td.action-checkbox]:text-center"
+    >
+      <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:bg-gray-700 dark:text-gray-300">
+        <tr>
+          {% for header in result_headers %}
+            {% with header.class_attrib|default:'' as header_class %}
+              <th scope="col"{{ header.class_attrib }}>
+                {% if 'action-checkbox-column' in header_class %}
+                  <div class="flex items-center justify-center">
+                    {{ header.text }}
+                  </div>
+                {% else %}
+                  <div class="flex w-full items-center justify-between gap-2">
+                    <div class="min-w-0 flex-1 truncate">
+                      {% if header.sortable %}
+                        <a
+                          href="{{ header.url_primary }}"
+                          class="flex min-w-0 items-center gap-2 truncate text-xs font-semibold uppercase tracking-wide text-gray-600 transition hover:text-blue-600 dark:text-gray-200 dark:hover:text-blue-400"
+                        >
+                          <span class="truncate">{{ header.text|capfirst }}</span>
+                          <svg
+                            aria-hidden="true"
+                            class="h-3.5 w-3.5 flex-shrink-0 text-gray-300 transition-transform {% if header.sorted %}text-blue-600 dark:text-blue-400 {% if header.ascending %}rotate-180{% endif %}{% endif %}"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M7 7h10M7 12h10M7 17h10" />
+                          </svg>
+                        </a>
+                      {% else %}
+                        <span class="block truncate text-xs font-semibold uppercase tracking-wide">{{ header.text|capfirst }}</span>
+                      {% endif %}
+                    </div>
+                    {% if header.sortable and header.sort_priority > 0 %}
+                      <div class="flex items-center gap-1">
+                        {% if num_sorted_fields > 1 %}
+                          <span
+                            class="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded bg-gray-200 px-1 text-[0.625rem] font-semibold text-gray-600 dark:bg-gray-600/60 dark:text-gray-100"
+                            title="{% blocktranslate with priority_number=header.sort_priority %}Sorting priority: {{ priority_number }}{% endblocktranslate %}"
+                          >
+                            {{ header.sort_priority }}
+                          </span>
+                        {% endif %}
+                        <a
+                          class="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition hover:bg-gray-200 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-600/60 dark:hover:text-gray-100"
+                          href="{{ header.url_remove }}"
+                          title="{% translate "Remove from sorting" %}"
+                        >
+                          <span class="sr-only">{% translate "Remove from sorting" %}</span>
+                          <svg aria-hidden="true" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M6 6l12 12M18 6L6 18" />
+                          </svg>
+                        </a>
+                        <a
+                          class="inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition hover:bg-gray-200 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:text-gray-400 dark:hover:bg-gray-600/60 dark:hover:text-gray-100"
+                          href="{{ header.url_toggle }}"
+                          title="{% translate "Toggle sorting" %}"
+                        >
+                          <span class="sr-only">{% translate "Toggle sorting" %}</span>
+                          <svg aria-hidden="true" class="h-3.5 w-3.5 {% if header.ascending %}rotate-180{% endif %}" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M12 5l6 6H6l6-6zm0 14l-6-6h12l-6 6z" />
+                          </svg>
+                        </a>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </th>
+            {% endwith %}
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200 dark:divide-gray-700 [&_tr]:bg-white [&_tr]:transition-colors hover:[&_tr]:bg-gray-50 dark:[&_tr]:bg-gray-800 dark:hover:[&_tr]:bg-gray-700/60">
+        {% for result in results %}
+          {% if result.form and result.form.non_field_errors %}
+            <tr>
+              <td colspan="{{ result|length }}" class="bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-200">
+                {{ result.form.non_field_errors }}
+              </td>
+            </tr>
+          {% endif %}
+          <tr>
+            {% for item in result %}{{ item }}{% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}

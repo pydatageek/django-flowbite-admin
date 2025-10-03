@@ -1,0 +1,32 @@
+{% load i18n %}
+{% if cl.search_fields %}
+  <div id="toolbar">
+    <form id="changelist-search" method="get" role="search" class="flex flex-col gap-2">
+      <div class="flex items-center gap-3 rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-600 ring-1 ring-inset ring-gray-200 transition focus-within:ring-2 focus-within:ring-blue-500 dark:bg-gray-900 dark:text-gray-300 dark:ring-gray-700">
+        <span class="text-gray-400">
+          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M19 19l-4.35-4.35m1.52-3.48a6 6 0 11-12 0 6 6 0 0112 0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </span>
+        <label class="sr-only" for="searchbar">{% translate 'Search' %}</label>
+        <input type="text" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" placeholder="{% translate 'Search' %}"
+               class="flex-1 border-0 bg-transparent p-0 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 dark:text-white"{% if cl.search_help_text %} aria-describedby="searchbar_helptext"{% endif %}>
+        <button type="submit" class="inline-flex items-center rounded-full bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-900">
+          {% translate 'Search' %}
+        </button>
+      </div>
+      {% for pair in cl.params.items %}
+        {% if pair.0 != search_var %}<input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}" hidden>{% endif %}
+      {% endfor %}
+      {% if show_result_count %}
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          {% blocktranslate count counter=cl.result_count %}{{ counter }} result{% plural %}{{ counter }} results{% endblocktranslate %}
+          (<a class="font-medium text-blue-600 hover:underline" href="?{% if cl.is_popup %}{{ is_popup_var }}=1{% if cl.add_facets %}&amp;{% endif %}{% endif %}{% if cl.add_facets %}{{ is_facets_var }}{% endif %}">{% if cl.show_full_result_count %}{% blocktranslate with full_result_count=cl.full_result_count %}{{ full_result_count }} total{% endblocktranslate %}{% else %}{% translate "Show all" %}{% endif %}</a>)
+        </p>
+      {% endif %}
+      {% if cl.search_help_text %}
+        <p class="text-xs text-gray-500 dark:text-gray-400" id="searchbar_helptext">{{ cl.search_help_text }}</p>
+      {% endif %}
+    </form>
+  </div>
+{% endif %}

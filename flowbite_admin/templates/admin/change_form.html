@@ -98,31 +98,27 @@
                   {% for fieldset in adminform %}
                     {% with heading=fieldset.name %}
                       {% with slug_base=heading|default_if_none:''|slugify %}
-                        {% if slug_base %}
-                          {% with panel_id=slug_base|add:'-'|add:forloop.counter %}
-                        {% else %}
-                          {% with panel_id='fieldset-'|add:forloop.counter %}
-                        {% endif %}
-                            {% with tab_id=panel_id|add:'-tab' %}
-                              <li role="presentation">
-                                <button
-                                  class="rounded-lg px-4 py-2 {% if forloop.first %}text-blue-700 bg-blue-50 dark:bg-blue-500/20 dark:text-blue-200{% else %}text-gray-600 hover:text-blue-700 dark:text-gray-300 dark:hover:text-white{% endif %}"
-                                  id="{{ tab_id }}"
-                                  type="button"
-                                  role="tab"
-                                  aria-controls="{{ panel_id }}"
-                                  aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
-                                  data-tabs-target="#{{ panel_id }}"
-                                >
-                                  {% if heading %}
-                                    {{ heading }}
-                                  {% else %}
-                                    {% blocktranslate with counter=forloop.counter %}Section {{ counter }}{% endblocktranslate %}
-                                  {% endif %}
-                                </button>
-                              </li>
-                            {% endwith %}
+                        {% with panel_id=slug_base|default:'fieldset'|add:'-'|add:forloop.counter %}
+                          {% with tab_id=panel_id|add:'-tab' %}
+                            <li role="presentation">
+                              <button
+                                class="rounded-lg px-4 py-2 {% if forloop.first %}text-blue-700 bg-blue-50 dark:bg-blue-500/20 dark:text-blue-200{% else %}text-gray-600 hover:text-blue-700 dark:text-gray-300 dark:hover:text-white{% endif %}"
+                                id="{{ tab_id }}"
+                                type="button"
+                                role="tab"
+                                aria-controls="{{ panel_id }}"
+                                aria-selected="{% if forloop.first %}true{% else %}false{% endif %}"
+                                data-tabs-target="#{{ panel_id }}"
+                              >
+                                {% if heading %}
+                                  {{ heading }}
+                                {% else %}
+                                  {% blocktranslate with counter=forloop.counter %}Section {{ counter }}{% endblocktranslate %}
+                                {% endif %}
+                              </button>
+                            </li>
                           {% endwith %}
+                        {% endwith %}
                       {% endwith %}
                     {% endwith %}
                   {% endfor %}
@@ -132,22 +128,18 @@
                 {% for fieldset in adminform %}
                   {% with heading=fieldset.name %}
                     {% with slug_base=heading|default_if_none:''|slugify %}
-                      {% if slug_base %}
-                        {% with panel_id=slug_base|add:'-'|add:forloop.counter %}
-                      {% else %}
-                        {% with panel_id='fieldset-'|add:forloop.counter %}
-                      {% endif %}
-                          {% with tab_id=panel_id|add:'-tab' %}
-                            <div
-                              id="{{ panel_id }}"
-                              role="tabpanel"
-                              aria-labelledby="{{ tab_id }}"
-                              class="{% if not forloop.first %}hidden {% endif %}p-6"
-                            >
-                              {% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}
-                            </div>
-                          {% endwith %}
+                      {% with panel_id=slug_base|default:'fieldset'|add:'-'|add:forloop.counter %}
+                        {% with tab_id=panel_id|add:'-tab' %}
+                          <div
+                            id="{{ panel_id }}"
+                            role="tabpanel"
+                            aria-labelledby="{{ tab_id }}"
+                            class="{% if not forloop.first %}hidden {% endif %}p-6"
+                          >
+                            {% include "admin/includes/fieldset.html" with heading_level=2 prefix="fieldset" id_prefix=0 id_suffix=forloop.counter0 %}
+                          </div>
                         {% endwith %}
+                      {% endwith %}
                     {% endwith %}
                   {% endwith %}
                 {% endfor %}

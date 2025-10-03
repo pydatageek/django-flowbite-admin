@@ -1,18 +1,18 @@
 {% for line in fieldset %}
-  {% with is_single=line.fields|length == 1 %}
+  {% with field_count=line.fields|length %}
     <div class="space-y-3{% if not line.has_visible_field %} hidden{% endif %}">
-      {% if is_single and line.errors %}
+      {% if field_count == 1 and line.errors %}
         <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
           {{ line.errors }}
         </div>
       {% endif %}
-      <div class="{% if is_single %}space-y-3{% else %}flex flex-col gap-6 lg:flex-row lg:flex-wrap{% endif %}">
+      <div class="{% if field_count == 1 %}space-y-3{% else %}flex flex-col gap-6 lg:flex-row lg:flex-wrap{% endif %}">
         {% for field in line %}
           {% if field.field.is_hidden %}
             {{ field.field }}
           {% else %}
-            <div class="min-w-0 space-y-2{% if not is_single %} lg:min-w-[16rem] lg:flex-1{% endif %}">
-              {% if not is_single and not field.is_readonly and field.errors %}
+            <div class="min-w-0 space-y-2{% if field_count != 1 %} lg:min-w-[16rem] lg:flex-1{% endif %}">
+              {% if field_count != 1 and not field.is_readonly and field.errors %}
                 <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
                   {{ field.errors }}
                 </div>

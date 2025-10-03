@@ -1,0 +1,52 @@
+{% load i18n %}
+{% with heading_tag=heading_level|default:2 %}
+<section
+  class="space-y-6 {{ fieldset.classes|default:'' }}"
+  {% if fieldset.name %}aria-labelledby="{{ prefix }}-{{ id_prefix }}-{{ id_suffix }}-heading"{% endif %}
+>
+  {% if fieldset.name %}
+    {% if fieldset.is_collapsible %}
+      <details class="group space-y-5" data-admin-fieldset{% if 'collapsed' not in fieldset.classes|default:'' %} open{% endif %}>
+        <summary class="flex cursor-pointer items-center justify-between gap-3 text-left">
+          <h{{ heading_tag }}
+            id="{{ prefix }}-{{ id_prefix }}-{{ id_suffix }}-heading"
+            class="text-lg font-semibold text-gray-900 transition-colors duration-150 group-open:text-blue-700 dark:text-white dark:group-open:text-blue-300"
+          >
+            {{ fieldset.name }}
+          </h{{ heading_tag }}>
+          <span class="text-sm font-medium text-gray-500 group-open:hidden dark:text-gray-400">{% translate "Show" %}</span>
+          <span class="hidden text-sm font-medium text-gray-500 group-open:inline dark:text-gray-400">{% translate "Hide" %}</span>
+        </summary>
+        {% if fieldset.description %}
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ fieldset.description|safe }}</p>
+        {% endif %}
+        <div class="space-y-6">
+          {% include "admin/includes/fieldset_line.html" %}
+        </div>
+      </details>
+    {% else %}
+      <header class="space-y-2">
+        <h{{ heading_tag }}
+          id="{{ prefix }}-{{ id_prefix }}-{{ id_suffix }}-heading"
+          class="text-lg font-semibold text-gray-900 dark:text-white"
+        >
+          {{ fieldset.name }}
+        </h{{ heading_tag }}>
+        {% if fieldset.description %}
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ fieldset.description|safe }}</p>
+        {% endif %}
+      </header>
+      <div class="space-y-6">
+        {% include "admin/includes/fieldset_line.html" %}
+      </div>
+    {% endif %}
+  {% else %}
+    {% if fieldset.description %}
+      <p class="text-sm text-gray-500 dark:text-gray-400">{{ fieldset.description|safe }}</p>
+    {% endif %}
+    <div class="space-y-6">
+      {% include "admin/includes/fieldset_line.html" %}
+    </div>
+  {% endif %}
+</section>
+{% endwith %}

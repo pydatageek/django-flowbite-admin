@@ -16,9 +16,12 @@ class ProjectAdminSite(admin.AdminSite):
         app_list = super().get_app_list(request, app_label)
 
         if app_label is not None:
+            # When Django asks for a single app index, return the list untouched so
+            # the framework can render the requested page without hitting our
+            # custom ordering logic below.
             return app_list
 
-        return sorted(app_list, key=lambda app: app["name"].lower())
+        return sorted(app_list, key=lambda app: app["name"].casefold())
 
 
 project_admin_site = ProjectAdminSite(name="project_admin")

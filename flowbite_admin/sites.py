@@ -496,6 +496,7 @@ class FlowbiteAdminSite(admin.AdminSite):
         """Inject extra context needed by all admin templates."""
 
         context = super().each_context(request)
+        context["is_nav_sidebar_enabled"] = False
         context.setdefault("topbar_notifications", self.get_topbar_notifications(request))
         context.setdefault("user_profile_url", self.get_user_profile_url(request))
         return context

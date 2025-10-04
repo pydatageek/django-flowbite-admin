@@ -1,9 +1,15 @@
 {% extends "admin/base.html" %}
 {% load i18n static %}
 
+{% block stylesheet %}{% static 'flowbite_admin/css/flowbite-admin.css' %}{% endblock %}
+
+{% block dark-mode-vars %}{% endblock %}
+
+{% block responsive %}
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+{% endblock %}
+
 {% block extrastyle %}
-  {{ block.super }}
-  <link rel="stylesheet" href="{% static 'flowbite_admin/css/flowbite-admin.css' %}">
   <style>
     :root {
       color-scheme: light dark;
@@ -192,30 +198,7 @@
     </div>
   </div>
 </header>
-{% endblock %}
-
-{% block nav-breadcrumbs %}
-  <nav class="mt-20 px-4 sm:ml-64 sm:px-8" aria-label="{% translate 'Breadcrumbs' %}">
-    {% block breadcrumbs %}
-      <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-        <li>
-          <a class="inline-flex items-center gap-1 rounded-lg px-3 py-1 font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white" href="{% url 'admin:index' %}">
-            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6" />
-            </svg>
-            {% translate 'Home' %}
-          </a>
-        </li>
-        {% if title %}
-        <li aria-hidden="true" class="text-gray-400">/</li>
-        <li class="font-semibold text-gray-700 dark:text-gray-200">{{ title }}</li>
-        {% endif %}
-      </ol>
-    {% endblock %}
-  </nav>
-{% endblock %}
-
-{% block nav-sidebar %}
+{% if not is_popup %}
 <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-gray-900/60 sm:hidden" data-drawer-backdrop data-drawer-target="logo-sidebar" data-drawer-hide="logo-sidebar" aria-hidden="true"></div>
 <aside id="logo-sidebar" class="fixed left-0 top-0 z-40 flex h-screen w-64 -translate-x-full flex-col border-r border-gray-200 bg-white pt-20 shadow-lg transition-transform duration-300 ease-in-out dark:border-gray-700 dark:bg-gray-900 sm:translate-x-0" aria-label="{% translate 'Sidebar' %}" tabindex="-1">
   <div class="flex h-full flex-col">
@@ -297,7 +280,31 @@
     </div>
   </div>
 </aside>
+{% endif %}
 {% endblock %}
+
+{% block nav-breadcrumbs %}
+  <nav class="mt-20 px-4 sm:ml-64 sm:px-8" aria-label="{% translate 'Breadcrumbs' %}">
+    {% block breadcrumbs %}
+      <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+        <li>
+          <a class="inline-flex items-center gap-1 rounded-lg px-3 py-1 font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white" href="{% url 'admin:index' %}">
+            <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0h6" />
+            </svg>
+            {% translate 'Home' %}
+          </a>
+        </li>
+        {% if title %}
+        <li aria-hidden="true" class="text-gray-400">/</li>
+        <li class="font-semibold text-gray-700 dark:text-gray-200">{{ title }}</li>
+        {% endif %}
+      </ol>
+    {% endblock %}
+  </nav>
+{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
 
 
 {% block messages %}

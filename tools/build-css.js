@@ -278,6 +278,193 @@ img, video {
     width: calc(100% - var(--sidebar-collapsed-width));
   }
 }
+
+/* ------------------------------------------------------------------
+ * Change list action and inline form styling
+ * ------------------------------------------------------------------ */
+#changelist-form .results table {
+  width: 100%;
+  border-spacing: 0;
+}
+
+#changelist-form .results table thead th,
+#changelist-form .results table tbody td {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+
+#changelist-form .results table tbody td {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+#changelist-form .results table tbody td .help,
+#changelist-form .results table tbody td .errorlist {
+  margin-top: 0.25rem;
+}
+
+#changelist-form .results table tbody td .errorlist {
+  font-size: 0.75rem;
+  color: #b91c1c;
+}
+
+#changelist-form .results table tbody td input,
+#changelist-form .results table tbody td select,
+#changelist-form .results table tbody td textarea {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+#changelist-form .results table tbody td input:focus,
+#changelist-form .results table tbody td select:focus,
+#changelist-form .results table tbody td textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+#changelist-form .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 0;
+  margin: 0;
+}
+
+#changelist-form .actions label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+#changelist-form .actions select {
+  height: 2.5rem;
+  min-width: 12rem;
+  padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  color: #374151;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%),
+    linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+  background-position: calc(100% - 1.25rem) calc(50% - 0.3rem),
+    calc(100% - 0.75rem) calc(50% - 0.3rem);
+  background-size: 0.35rem 0.35rem, 0.35rem 0.35rem;
+  background-repeat: no-repeat;
+}
+
+#changelist-form .actions select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+#changelist-form .actions button.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border-radius: 0.75rem;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 600;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#changelist-form .actions button.button:hover {
+  background-color: #1d4ed8;
+}
+
+#changelist-form .actions button.button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+}
+
+#changelist-form .actions .action-counter,
+#changelist-form .actions .all,
+#changelist-form .actions .question,
+#changelist-form .actions .clear {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+#changelist-form .actions .question a,
+#changelist-form .actions .clear a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+#changelist-form .actions .question a:hover,
+#changelist-form .actions .clear a:hover {
+  color: #1d4ed8;
+}
+
+.dark #changelist-form .results table tbody td {
+  color: #d1d5db;
+}
+
+.dark #changelist-form .results table tbody td input,
+.dark #changelist-form .results table tbody td select,
+.dark #changelist-form .results table tbody td textarea {
+  border-color: #4b5563;
+  background-color: #1f2937;
+  color: #e5e7eb;
+}
+
+.dark #changelist-form .results table tbody td input:focus,
+.dark #changelist-form .results table tbody td select:focus,
+.dark #changelist-form .results table tbody td textarea:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.25);
+}
+
+.dark #changelist-form .actions label {
+  color: #e5e7eb;
+}
+
+.dark #changelist-form .actions select {
+  border-color: #4b5563;
+  background-color: #1f2937;
+  color: #e5e7eb;
+  background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%),
+    linear-gradient(135deg, #9ca3af 50%, transparent 50%);
+}
+
+.dark #changelist-form .actions button.button {
+  background-color: #1d4ed8;
+}
+
+.dark #changelist-form .actions button.button:hover {
+  background-color: #1e40af;
+}
+
+.dark #changelist-form .actions .action-counter,
+.dark #changelist-form .actions .all,
+.dark #changelist-form .actions .question,
+.dark #changelist-form .actions .clear {
+  color: #9ca3af;
+}
+
+.dark #changelist-form .actions .question a,
+.dark #changelist-form .actions .clear a {
+  color: #60a5fa;
+}
+
+.dark #changelist-form .actions .question a:hover,
+.dark #changelist-form .actions .clear a:hover {
+  color: #3b82f6;
+}
 `;
 
 const colorMap = {

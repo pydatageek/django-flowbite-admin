@@ -3,7 +3,6 @@
 
 {% block extrastyle %}
   {{ block.super }}
-  <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
   <style>
     #dashboard-widgets[data-dashboard-editing="true"] .dashboard-widget {
       border-style: dashed;
@@ -163,7 +162,7 @@
               {% endif %}
             </div>
             {% if app_list %}
-              <ul class="space-y-4">
+              <ul class="space-y-4 list-none">
                 {% for app in app_list %}
                   <li class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/60">
                     <div class="flex items-center justify-between gap-3">
@@ -224,17 +223,17 @@
             </div>
             {% if top_models %}
               <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-left text-sm dark:divide-gray-700">
+                <table class="min-w-full divide-y divide-gray-200 text-left text-sm break-words dark:divide-gray-700">
                   <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:bg-gray-900/40 dark:text-gray-400">
                     <tr>
-                      <th scope="col" class="px-4 py-3">{% translate 'Model' %}</th>
-                      <th scope="col" class="px-4 py-3 text-right">{% translate 'Objects' %}</th>
+                      <th scope="col" class="px-4 py-3 break-words">{% translate 'Model' %}</th>
+                      <th scope="col" class="px-4 py-3 text-right break-words">{% translate 'Objects' %}</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     {% for model in top_models %}
                       <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/60">
-                        <td class="px-4 py-3">
+                        <td class="px-4 py-3 break-words">
                           <div class="font-medium text-gray-900 dark:text-white">
                             {% if model.admin_url %}
                               <a href="{{ model.admin_url }}" class="hover:underline">{{ model.verbose_name }}</a>
@@ -270,7 +269,7 @@
               {% endif %}
             </div>
             {% if recent_logs %}
-              <ul class="space-y-3">
+              <ul class="space-y-3 list-none">
                 {% for entry in recent_logs %}
                   <li class="rounded-xl border border-gray-200 p-4 text-sm dark:border-gray-700 dark:bg-gray-900/60">
                     <div class="flex items-center justify-between gap-3">

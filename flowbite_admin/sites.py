@@ -319,6 +319,85 @@ class FlowbiteAdminSite(admin.AdminSite):
         return apps.get_model("admin", "LogEntry")
 
     # ------------------------------------------------------------------
+    # Navigation helpers
+    # ------------------------------------------------------------------
+    def _get_registered_model_keys(self) -> dict[str, str]:
+        """Return a mapping of ``app_label_model`` strings to their app labels."""
+
+        return {
+            f"{model._meta.app_label}_{model._meta.model_name}": model._meta.app_label
+            for model in self._registry
+        }
+
+    def _extract_model_key_from_url_name(self, url_name: str | None) -> str | None:
+        """Return the ``app_label_model`` key inferred from an admin URL name."""
+
+        if not url_name:
+            return None
+
+        suffixes = [
+            "_changelist",
+            "_add",
+            "_change",
+            "_delete",
+            "_history",
+        ]
+        for suffix in suffixes:
+            if url_name.endswith(suffix):
+                return url_name[: -len(suffix)]
+        return None
+
+    def _resolve_active_targets(self, request: HttpRequest) -> tuple[str | None, str | None]:
+        """Determine which app and model should be marked as active."""
+
+        resolver_match = getattr(request, "resolver_match", None)
+        if not resolver_match:
+            return None, None
+
+        namespace = resolver_match.namespace or resolver_match.app_name
+        if namespace != self.name:
+            return None, None
+
+        active_app_label: str | None = resolver_match.kwargs.get("app_label")
+        active_model_key: str | None = None
+
+        model_name = resolver_match.kwargs.get("model_name")
+        if active_app_label and model_name:
+            active_model_key = f"{active_app_label}_{model_name}"
+
+        registered_keys = self._get_registered_model_keys()
+
+        if not active_model_key:
+            inferred_key = self._extract_model_key_from_url_name(resolver_match.url_name)
+            if inferred_key and inferred_key in registered_keys:
+                active_model_key = inferred_key
+                active_app_label = active_app_label or registered_keys[inferred_key]
+
+        return active_app_label, active_model_key
+
+    def get_app_list(self, request: HttpRequest) -> List[dict]:
+        """Annotate the default app list with active state metadata."""
+
+        app_list = super().get_app_list(request)
+        active_app_label, active_model_key = self._resolve_active_targets(request)
+
+        for app in app_list:
+            app_label = app.get("app_label")
+            is_active_app = app_label == active_app_label
+
+            for model in app.get("models", []):
+                object_name = model.get("object_name", "")
+                model_key = f"{app_label}_{object_name.lower()}" if app_label else None
+                is_active_model = model_key == active_model_key
+                model["is_active_model"] = is_active_model
+                if is_active_model:
+                    is_active_app = True
+
+            app["is_active_app"] = is_active_app
+
+        return app_list
+
+    # ------------------------------------------------------------------
     # Index view
     # ------------------------------------------------------------------
     def index(self, request: HttpRequest, extra_context: dict | None = None) -> HttpResponse:

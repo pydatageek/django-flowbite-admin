@@ -90,6 +90,22 @@ class AdminFlowbiteTests(TestCase):
         self.assertContains(response, 'id="advanced-filter-form"')
         self.assertContains(response, 'form="advanced-filter-form"')
 
+        class _AdvancedFormParser(HTMLParser):
+            def __init__(self) -> None:
+                super().__init__()
+                self.method: str | None = None
+
+            def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+                if tag != "form":
+                    return
+                attr_map = dict(attrs)
+                if attr_map.get("id") == "advanced-filter-form":
+                    self.method = (attr_map.get("method") or "").lower()
+
+        parser = _AdvancedFormParser()
+        parser.feed(response.content.decode())
+        self.assertEqual(parser.method, "get")
+
     def test_advanced_filters_limit_queryset(self) -> None:
         extra = Book.objects.create(title="Flowbuddy", author="Helper", published=date(2024, 1, 1))
         other = Book.objects.create(title="Library Almanac", author="Archivist", published=date(2020, 5, 1))
@@ -162,6 +178,67 @@ class AdminFlowbiteTests(TestCase):
             reset_response.wsgi_request.GET.get("published__exact"),
             published_on.isoformat(),
         )
+
+    def test_advanced_filter_form_is_not_nested_inside_changelist_form(self) -> None:
+        self.login()
+        response = self.client.get(reverse("admin:admin_tests_book_changelist"))
+        self.assertEqual(response.status_code, 200)
+
+        class _FormHierarchyParser(HTMLParser):
+            def __init__(self) -> None:
+                super().__init__()
+                self._form_stack: list[str | None] = []
+                self.advanced_parent: str | None = None
+
+            def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+                if tag != "form":
+                    return
+                form_id = dict(attrs).get("id")
+                if form_id == "advanced-filter-form":
+                    self.advanced_parent = self._form_stack[-1] if self._form_stack else None
+                self._form_stack.append(form_id)
+
+            def handle_endtag(self, tag: str) -> None:
+                if tag != "form" or not self._form_stack:
+                    return
+                self._form_stack.pop()
+
+        parser = _FormHierarchyParser()
+        parser.feed(response.content.decode())
+        self.assertIsNone(parser.advanced_parent, "Advanced filter form should not be nested inside another form")
+
+    def test_bulk_action_submission_succeeds(self) -> None:
+        self.login()
+        changelist_url = reverse("admin:admin_tests_book_changelist")
+
+        # Initiate the delete_selected action and confirm the intermediate page renders.
+        response = self.client.post(
+            changelist_url,
+            {
+                "action": "delete_selected",
+                "select_across": "0",
+                "index": "0",
+                "_selected_action": [str(self.book.pk)],
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Are you sure you want to delete the selected")
+
+        # Confirm the deletion through the action and ensure the object is removed.
+        confirm_response = self.client.post(
+            changelist_url,
+            {
+                "action": "delete_selected",
+                "select_across": "0",
+                "index": "0",
+                "_selected_action": [str(self.book.pk)],
+                "post": "yes",
+            },
+            follow=True,
+        )
+        self.assertEqual(confirm_response.status_code, 200)
+        self.assertContains(confirm_response, "Successfully deleted")
+        self.assertFalse(Book.objects.filter(pk=self.book.pk).exists())
 
     def test_change_form_has_flowbite_form_controls(self) -> None:
         self.login()

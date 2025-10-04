@@ -13,17 +13,33 @@ from django.db import OperationalError
 from django.db.models import Count
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.template.response import TemplateResponse
-from django.urls import NoReverseMatch, reverse
+from django.urls import NoReverseMatch, path, reverse
 from django.utils import timezone
 from django.utils.formats import date_format
 from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
+
+from .views import UserSettingsView
+
+
+def get_user_settings_urlpatterns(site: admin.AdminSite) -> list:
+    """Return URL patterns used to power the user settings screen."""
+
+    return [
+        path("settings/", site.admin_view(UserSettingsView.as_view()), name="user-settings"),
+    ]
 
 
 class FlowbiteAdminSite(admin.AdminSite):
     """Admin site that powers the Flowbite dashboard widgets."""
 
     widget_session_key = "flowbite_admin_widget_layout"
+
+    def get_urls(self):
+        """Extend default admin URLs with Flowbite-specific views."""
+
+        urls = super().get_urls()
+        return get_user_settings_urlpatterns(self) + urls
 
     def get_default_widget_layout(self, request: HttpRequest) -> List[str]:
         """Return the default order for dashboard widgets."""

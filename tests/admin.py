@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin
 
 from flowbite_admin import FlowbiteAdminSite
 
@@ -37,3 +39,6 @@ class BookAdmin(admin.ModelAdmin):
 
 
 project_admin_site.register(Book, BookAdmin)
+
+UserModel = get_user_model()
+project_admin_site.register(UserModel, UserAdmin)

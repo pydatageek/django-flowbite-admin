@@ -362,9 +362,26 @@ class FlowbiteAdminSite(admin.AdminSite):
         request.current_app = self.name
         return TemplateResponse(request, self.index_template or "admin/index.html", context)
 
+    def get_user_profile_url(self, request: HttpRequest) -> str | None:
+        """Return the admin change URL for the authenticated user, if available."""
+
+        user = getattr(request, "user", None)
+
+        if not getattr(user, "is_authenticated", False):
+            return None
+
+        try:
+            return reverse(
+                f"{self.name}:{user._meta.app_label}_{user._meta.model_name}_change",
+                args=[user.pk],
+            )
+        except NoReverseMatch:
+            return None
+
     def each_context(self, request: HttpRequest) -> dict:
         """Inject extra context needed by all admin templates."""
 
         context = super().each_context(request)
         context.setdefault("topbar_notifications", self.get_topbar_notifications(request))
+        context.setdefault("user_profile_url", self.get_user_profile_url(request))
         return context

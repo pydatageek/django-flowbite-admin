@@ -10,12 +10,16 @@ import django
 
 django.setup()
 
+from django.core.management import call_command
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.test import Client, TestCase
 from django.urls import reverse
 
 from .models import Book
+
+
+call_command("migrate", verbosity=0, run_syncdb=True)
 
 
 class AdminFlowbiteTests(TestCase):
@@ -94,10 +98,8 @@ class AdminFlowbiteTests(TestCase):
             {"af__title__contains": "Flowbuddy", "af__published__gt": "2021-01-01"},
         )
         self.assertEqual(response.status_code, 200)
-        cl = response.context["cl"]
-        titles = list(cl.queryset.values_list("title", flat=True))
-        self.assertIn(extra.title, titles)
-        self.assertNotIn(other.title, titles)
+        self.assertContains(response, extra.title)
+        self.assertNotContains(response, other.title)
         self.assertContains(response, 'value="Flowbuddy"')
         self.assertContains(response, 'value="2021-01-01"')
 
@@ -136,6 +138,13 @@ class AdminFlowbiteTests(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assert_content_has_sidebar_offset(response)
+
+    def test_project_admin_profile_link_targets_current_site(self) -> None:
+        self.login()
+        response = self.client.get(reverse("project_admin:auth_user_changelist"))
+        self.assertEqual(response.status_code, 200)
+        profile_url = reverse("project_admin:auth_user_change", args=[self.user.pk])
+        self.assertContains(response, f'href="{profile_url}"')
 
     def test_delete_confirmation_template_renders(self) -> None:
         self.login()

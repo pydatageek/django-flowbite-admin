@@ -135,7 +135,7 @@
           <ul class="list-none space-y-1 p-2 text-sm text-gray-700 dark:text-gray-200" data-user-menu-links>
             {% block userlinks %}
               <li>
-                <a class="flex items-center rounded-lg px-3 py-2 font-medium text-gray-700 transition hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-700/70 dark:hover:text-white" href="{% url 'admin:auth_user_change' user.pk %}">
+                <a class="flex items-center rounded-lg px-3 py-2 font-medium text-gray-700 transition hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-700/70 dark:hover:text-white" href="{{ user_profile_url|default:'#' }}">
                   {% translate 'Profile' %}
                 </a>
               </li>

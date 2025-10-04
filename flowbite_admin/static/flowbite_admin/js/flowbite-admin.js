@@ -186,21 +186,76 @@
 
     const overlay = document.getElementById('sidebar-backdrop');
     const smMediaQuery = window.matchMedia('(min-width: 640px)');
+    const collapseTriggers = document.querySelectorAll('[data-sidebar-collapse-trigger]');
+    const collapseStorageKey = 'flowbite-admin:sidebar-collapsed';
+    const collapsedClass = 'sidebar-is-collapsed';
+    const bodyCollapsedClass = 'sidebar-collapsed';
+    let collapsedPreference = readStoredCollapsedPreference();
 
-    function updateExpandedState(isExpanded) {
+    function readStoredCollapsedPreference() {
+      try {
+        return localStorage.getItem(collapseStorageKey) === 'true';
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function persistCollapsedPreference(collapsed) {
+      try {
+        localStorage.setItem(collapseStorageKey, collapsed ? 'true' : 'false');
+      } catch (error) {
+        /* noop */
+      }
+    }
+
+    function renderCollapsedState() {
+      const isDesktop = smMediaQuery.matches;
+      const shouldCollapse = collapsedPreference && isDesktop;
+      drawer.classList.toggle(collapsedClass, shouldCollapse);
+      document.body.classList.toggle(bodyCollapsedClass, shouldCollapse);
+    }
+
+    function updateExpandedState() {
+      const isDesktop = smMediaQuery.matches;
+      const isDrawerOpen = !drawer.classList.contains('-translate-x-full');
+      const isCollapsed = collapsedPreference && isDesktop;
+      const ariaExpanded = isDesktop ? !isCollapsed : isDrawerOpen;
+
       triggers.forEach(function (trigger) {
-        trigger.setAttribute('aria-expanded', String(isExpanded));
+        trigger.setAttribute('aria-expanded', String(ariaExpanded));
       });
-      const shouldLockScroll = isExpanded && !smMediaQuery.matches;
+
+      const collapseAriaExpanded = isDesktop ? !isCollapsed : isDrawerOpen;
+      collapseTriggers.forEach(function (trigger) {
+        trigger.setAttribute('aria-pressed', String(isCollapsed));
+        trigger.setAttribute('aria-expanded', String(collapseAriaExpanded));
+      });
+
+      const shouldLockScroll = isDrawerOpen && !isDesktop;
       if (overlay) {
         overlay.classList.toggle('hidden', !shouldLockScroll);
       }
       document.body.classList.toggle('overflow-hidden', shouldLockScroll);
     }
 
+    function setCollapsedPreference(collapsed, options) {
+      const settings = options || {};
+      collapsedPreference = collapsed;
+      renderCollapsedState();
+      updateExpandedState();
+      if (settings.persist !== false) {
+        persistCollapsedPreference(collapsedPreference);
+      }
+    }
+
+    function toggleCollapsedPreference() {
+      setCollapsedPreference(!collapsedPreference);
+    }
+
+    renderCollapsedState();
+
     const observer = new MutationObserver(function () {
-      const isExpanded = !drawer.classList.contains('-translate-x-full');
-      updateExpandedState(isExpanded);
+      updateExpandedState();
     });
 
     observer.observe(drawer, { attributes: true, attributeFilter: ['class'] });
@@ -210,7 +265,8 @@
       } else {
         drawer.classList.add('-translate-x-full');
       }
-      updateExpandedState(!drawer.classList.contains('-translate-x-full'));
+      renderCollapsedState();
+      updateExpandedState();
     }
 
     syncForBreakpoint(smMediaQuery);
@@ -226,5 +282,26 @@
         drawer.classList.add('-translate-x-full');
       });
     }
+
+    collapseTriggers.forEach(function (trigger) {
+      trigger.addEventListener('click', function (event) {
+        if (!smMediaQuery.matches) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+        toggleCollapsedPreference();
+      });
+    });
+
+    window.addEventListener('storage', function (event) {
+      if (event.key !== collapseStorageKey) {
+        return;
+      }
+      collapsedPreference = event.newValue === 'true';
+      renderCollapsedState();
+      updateExpandedState();
+    });
   }
 })();

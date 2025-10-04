@@ -79,6 +79,11 @@ img, video {
   height: auto;
 }
 
+#logo-sidebar li,
+#sidebar-accordion li {
+  list-style: none;
+}
+
 /* Topbar component styles */
 .topbar-search {
   display: flex;

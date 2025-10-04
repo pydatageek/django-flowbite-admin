@@ -9,7 +9,7 @@ from django.contrib.admin.utils import quote
 from django.urls import NoReverseMatch, reverse
 from django.utils.translation import gettext_lazy as _
 
-from .forms import AdvancedFilterForm
+from .forms.advanced import AdvancedFilterForm
 
 
 class AdvancedChangeList(ChangeList):

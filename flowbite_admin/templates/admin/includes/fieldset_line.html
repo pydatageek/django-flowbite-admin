@@ -1,57 +1,74 @@
 {% for line in fieldset %}
   {% with field_count=line.fields|length %}
-    <div class="space-y-3{% if not line.has_visible_field %} hidden{% endif %}">
+    <div class="space-y-4{% if not line.has_visible_field %} hidden{% endif %}">
       {% if field_count == 1 and line.errors %}
-        <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
-          {{ line.errors }}
+        <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
+          <ul class="space-y-1">
+            {% for error in line.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
         </div>
       {% endif %}
-      <div class="{% if field_count == 1 %}space-y-3{% else %}flex flex-col gap-6 lg:flex-row lg:flex-wrap{% endif %}">
+      <div class="{% if field_count == 1 %}space-y-4{% else %}flex flex-col gap-6 lg:flex-row lg:flex-wrap{% endif %}">
         {% for field in line %}
           {% if field.field.is_hidden %}
             {{ field.field }}
           {% else %}
-            <div class="min-w-0 space-y-2{% if field_count != 1 %} lg:min-w-[16rem] lg:flex-1{% endif %}">
-              {% if field_count != 1 and not field.is_readonly and field.errors %}
-                <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
-                  {{ field.errors }}
-                </div>
-              {% endif %}
-              <div class="space-y-2">
-                {% if field.is_checkbox %}
-                  <label class="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200">
-                    {{ field.field }}
-                    <span class="font-medium text-gray-900 dark:text-gray-100">
-                      {{ field.field.label|default_if_none:"" }}{% if field.field.field.required %}<span class="text-red-600 dark:text-red-300">*</span>{% endif %}
-                    </span>
-                  </label>
-                {% else %}
-                  <div class="space-y-1">
-                    {% if field.field.id_for_label %}
-                      <label for="{{ field.field.id_for_label }}" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {{ field.field.label|default_if_none:"" }}{% if field.field.field.required %}<span class="text-red-600 dark:text-red-300">*</span>{% endif %}:
-                      </label>
-                    {% else %}
-                      <span class="block text-sm font-medium text-gray-900 dark:text-gray-100">
-                        {{ field.field.label|default_if_none:"" }}{% if field.field.field.required %}<span class="text-red-600 dark:text-red-300">*</span>{% endif %}:
+            {% with help_text=field.field.help_text %}
+              {% with help_text_id=field.field.id_for_label|default_if_none:""|add:"_helptext" %}
+                <div class="min-w-0 space-y-3{% if field_count != 1 %} lg:min-w-[16rem] lg:flex-1{% endif %}">
+                  {% if field_count != 1 and not field.is_readonly and field.errors %}
+                    <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
+                      <ul class="space-y-1">
+                        {% for error in field.errors %}
+                          <li>{{ error }}</li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  {% endif %}
+                  {% if field.is_checkbox %}
+                    <label class="flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200">
+                      <span class="pt-1">
+                        {{ field.field }}
                       </span>
-                    {% endif %}
-                    {% if field.is_readonly %}
-                      <div class="rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200">
-                        {{ field.contents }}
-                      </div>
-                    {% else %}
-                      {{ field.field }}
-                    {% endif %}
-                  </div>
-                {% endif %}
-              </div>
-              {% if field.field.help_text %}
-                <p class="text-sm text-gray-500 dark:text-gray-400"{% if field.field.id_for_label %} id="{{ field.field.id_for_label }}_helptext"{% endif %}>
-                  {{ field.field.help_text|safe }}
-                </p>
-              {% endif %}
-            </div>
+                      <span class="space-y-1">
+                        <span class="font-medium text-gray-900 dark:text-gray-100">
+                          {{ field.field.label|default_if_none:"" }}{% if field.field.field.required %}<span class="text-red-600 dark:text-red-300">*</span>{% endif %}
+                        </span>
+                        {% if help_text %}
+                          <span class="text-sm text-gray-500 dark:text-gray-400">{{ help_text|safe }}</span>
+                        {% endif %}
+                      </span>
+                    </label>
+                  {% else %}
+                    <div class="space-y-2">
+                      {% if field.field.id_for_label %}
+                        <label for="{{ field.field.id_for_label }}" class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {{ field.field.label|default_if_none:"" }}{% if field.field.field.required %}<span class="text-red-600 dark:text-red-300">*</span>{% endif %}
+                        </label>
+                      {% else %}
+                        <span class="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {{ field.field.label|default_if_none:"" }}{% if field.field.field.required %}<span class="text-red-600 dark:text-red-300">*</span>{% endif %}
+                        </span>
+                      {% endif %}
+                      {% if field.is_readonly %}
+                        <div class="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-gray-800/60 dark:text-gray-200">
+                          {{ field.contents }}
+                        </div>
+                      {% else %}
+                        {{ field.field }}
+                      {% endif %}
+                      {% if help_text %}
+                        <p class="text-sm text-gray-500 dark:text-gray-400"{% if field.field.id_for_label %} id="{{ help_text_id }}"{% endif %}>
+                          {{ help_text|safe }}
+                        </p>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                </div>
+              {% endwith %}
+            {% endwith %}
           {% endif %}
         {% endfor %}
       </div>

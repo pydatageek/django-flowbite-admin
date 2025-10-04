@@ -8,8 +8,9 @@ from typing import Iterable, List
 
 from django.apps import apps
 from django.contrib import admin
+from django.contrib.admin.options import FORMFIELD_FOR_DBFIELD_DEFAULTS
 from django.contrib.auth import get_user_model
-from django.db import OperationalError
+from django.db import OperationalError, models
 from django.db.models import Count
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.template.response import TemplateResponse
@@ -19,7 +20,38 @@ from django.utils.formats import date_format
 from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
 
+from .forms.widgets import (
+    FlowbiteCheckboxInput,
+    FlowbiteNumberInput,
+    FlowbiteSelect,
+    FlowbiteSelectMultiple,
+    FlowbiteTextarea,
+    FlowbiteTextInput,
+)
 from .views import UserSettingsView
+
+
+FORMFIELD_FOR_DBFIELD_DEFAULTS.update(
+    {
+        models.CharField: {"widget": FlowbiteTextInput},
+        models.EmailField: {"widget": FlowbiteTextInput},
+        models.SlugField: {"widget": FlowbiteTextInput},
+        models.URLField: {"widget": FlowbiteTextInput},
+        models.UUIDField: {"widget": FlowbiteTextInput},
+        models.TextField: {"widget": FlowbiteTextarea},
+        models.IntegerField: {"widget": FlowbiteNumberInput},
+        models.BigIntegerField: {"widget": FlowbiteNumberInput},
+        models.SmallIntegerField: {"widget": FlowbiteNumberInput},
+        models.PositiveIntegerField: {"widget": FlowbiteNumberInput},
+        models.PositiveSmallIntegerField: {"widget": FlowbiteNumberInput},
+        models.DecimalField: {"widget": FlowbiteNumberInput},
+        models.FloatField: {"widget": FlowbiteNumberInput},
+        models.BooleanField: {"widget": FlowbiteCheckboxInput},
+        models.ForeignKey: {"widget": FlowbiteSelect},
+        models.OneToOneField: {"widget": FlowbiteSelect},
+        models.ManyToManyField: {"widget": FlowbiteSelectMultiple},
+    }
+)
 
 
 def get_user_settings_urlpatterns(site: admin.AdminSite) -> list:

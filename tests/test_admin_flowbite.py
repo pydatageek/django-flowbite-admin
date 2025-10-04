@@ -87,6 +87,8 @@ class AdminFlowbiteTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "data-accordion=\"collapse\"")
         self.assertContains(response, "name=\"af__title__contains\"")
+        self.assertContains(response, 'id="advanced-filter-form"')
+        self.assertContains(response, 'form="advanced-filter-form"')
 
     def test_advanced_filters_limit_queryset(self) -> None:
         extra = Book.objects.create(title="Flowbuddy", author="Helper", published=date(2024, 1, 1))

@@ -84,6 +84,14 @@ img, video {
   list-style: none;
 }
 
+#sidebar-accordion [data-accordion-icon] {
+  transition: transform 0.2s ease;
+}
+
+[data-accordion-item] > h3 > button[aria-expanded="true"] [data-accordion-icon] {
+  transform: rotate(180deg);
+}
+
 /* Topbar component styles */
 .topbar-search {
   display: flex;
@@ -209,6 +217,7 @@ img, video {
 const colorMap = {
   white: '#ffffff',
   'blue-50': '#eff6ff',
+  'blue-100': '#dbeafe',
   'blue-500': '#3b82f6',
   'blue-600': '#2563eb',
   'blue-700': '#1d4ed8',
@@ -269,6 +278,7 @@ const spacingScale = {
   '6': '1.5rem',
   '8': '2rem',
   '10': '2.5rem',
+  '11': '2.75rem',
   '12': '3rem',
   '16': '4rem',
   '20': '5rem',
@@ -378,20 +388,26 @@ function baseDeclaration(base) {
     case 'gap-4': return 'gap: 1rem;';
     case 'gap-6': return 'gap: 1.5rem;';
     case 'gap-8': return 'gap: 2rem;';
+    case 'p-1': return 'padding: 0.25rem;';
     case 'p-2': return 'padding: 0.5rem;';
     case 'p-3': return 'padding: 0.75rem;';
     case 'p-4': return 'padding: 1rem;';
     case 'p-6': return 'padding: 1.5rem;';
     case 'p-8': return 'padding: 2rem;';
+    case 'px-2': return 'padding-left: 0.5rem; padding-right: 0.5rem;';
     case 'px-3': return 'padding-left: 0.75rem; padding-right: 0.75rem;';
     case 'px-4': return 'padding-left: 1rem; padding-right: 1rem;';
     case 'px-6': return 'padding-left: 1.5rem; padding-right: 1.5rem;';
+    case 'py-0.5': return 'padding-top: 0.125rem; padding-bottom: 0.125rem;';
     case 'py-1': return 'padding-top: 0.25rem; padding-bottom: 0.25rem;';
     case 'py-2': return 'padding-top: 0.5rem; padding-bottom: 0.5rem;';
     case 'py-3': return 'padding-top: 0.75rem; padding-bottom: 0.75rem;';
     case 'py-4': return 'padding-top: 1rem; padding-bottom: 1rem;';
     case 'pb-6': return 'padding-bottom: 1.5rem;';
+    case 'pl-2': return 'padding-left: 0.5rem;';
+    case 'pl-3': return 'padding-left: 0.75rem;';
     case 'pl-6': return 'padding-left: 1.5rem;';
+    case 'pl-11': return 'padding-left: 2.75rem;';
     case 'pt-20': return 'padding-top: 5rem;';
     case 'mx-auto': return 'margin-left: auto; margin-right: auto;';
     case 'mx-4': return 'margin-left: 1rem; margin-right: 1rem;';
@@ -404,15 +420,19 @@ function baseDeclaration(base) {
     case 'mt-24': return 'margin-top: 6rem;';
     case 'mb-4': return 'margin-bottom: 1rem;';
     case 'mb-6': return 'margin-bottom: 1.5rem;';
+    case 'ml-3': return 'margin-left: 0.75rem;';
+    case 'ml-auto': return 'margin-left: auto;';
     case 'min-h-[70vh]': return 'min-height: 70vh;';
     case 'w-full': return 'width: 100%;';
     case 'w-auto': return 'width: auto;';
     case 'w-64': return 'width: 16rem;';
     case 'w-10': return 'width: 2.5rem;';
+    case 'w-6': return 'width: 1.5rem;';
     case 'w-5': return 'width: 1.25rem;';
     case 'w-4': return 'width: 1rem;';
     case 'h-10': return 'height: 2.5rem;';
     case 'h-8': return 'height: 2rem;';
+    case 'h-6': return 'height: 1.5rem;';
     case 'h-5': return 'height: 1.25rem;';
     case 'h-4': return 'height: 1rem;';
     case 'h-full': return 'height: 100%;';
@@ -432,7 +452,11 @@ function baseDeclaration(base) {
     case 'border-dashed': return 'border-style: dashed;';
     case '-translate-x-full': return 'transform: translateX(-100%);';
     case 'transition': return 'transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);';
+    case 'transition-colors': return 'transition-property: color, background-color, border-color; transition-duration: 0.2s; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);';
     case 'transition-transform': return 'transition-property: transform; transition-duration: 0.2s; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);';
+    case 'duration-200': return 'transition-duration: 0.2s;';
+    case 'duration-300': return 'transition-duration: 0.3s;';
+    case 'ease-in-out': return 'transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);';
     case 'shadow-sm': return 'box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);';
     case 'shadow-xl': return 'box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 10px 10px -5px rgba(15, 23, 42, 0.04);';
     case 'font-medium': return 'font-weight: 500;';
@@ -441,6 +465,7 @@ function baseDeclaration(base) {
     case 'uppercase': return 'text-transform: uppercase;';
     case 'tracking-wide': return 'letter-spacing: 0.05em;';
     case 'tracking-widest': return 'letter-spacing: 0.1em;';
+    case 'text-left': return 'text-align: left;';
     case 'text-center': return 'text-align: center;';
     case 'text-right': return 'text-align: right;';
     case 'backdrop-blur': return 'backdrop-filter: blur(8px);';
@@ -457,6 +482,7 @@ function baseDeclaration(base) {
     case 'object-tools': return 'display: flex; gap: 0.5rem; list-style: none; margin: 0; padding: 0;';
     case 'changelist-form-container': return 'overflow-x: auto;';
     case 'cancel-link': return 'display: inline-block; margin-left: 1rem; color: #4b5563;';
+    case 'truncate': return 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;';
   }
   if (base.startsWith('grid-cols-[')) {
     const value = base.slice('grid-cols-['.length, -1);

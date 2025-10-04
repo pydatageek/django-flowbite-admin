@@ -375,10 +375,13 @@ class FlowbiteAdminSite(admin.AdminSite):
 
         return active_app_label, active_model_key
 
-    def get_app_list(self, request: HttpRequest) -> List[dict]:
+    def get_app_list(self, request: HttpRequest, app_label: str | None = None) -> List[dict]:
         """Annotate the default app list with active state metadata."""
 
-        app_list = super().get_app_list(request)
+        try:
+            app_list = super().get_app_list(request, app_label)  # type: ignore[arg-type]
+        except TypeError:
+            app_list = super().get_app_list(request)
         active_app_label, active_model_key = self._resolve_active_targets(request)
 
         for app in app_list:

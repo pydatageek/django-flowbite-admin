@@ -40,6 +40,11 @@ body {
   background-color: #f9fafb;
   color: #1f2937;
 }
+:root {
+  --sidebar-width: 16rem;
+  --sidebar-collapsed-width: 4.5rem;
+  --sidebar-transition-duration: 0.3s;
+}
 h1, h2, h3, h4, h5, h6 {
   font-size: inherit;
   font-weight: inherit;
@@ -210,6 +215,67 @@ img, video {
     padding-left: 0;
     margin-left: 16rem;
     width: calc(100% - 16rem);
+  }
+}
+
+#logo-sidebar {
+  width: var(--sidebar-width);
+  transition: width var(--sidebar-transition-duration) ease;
+  overflow: hidden;
+}
+
+#logo-sidebar .sidebar-item {
+  transition: padding var(--sidebar-transition-duration) ease;
+}
+
+@media (min-width: 640px) {
+  #logo-sidebar.sidebar-is-collapsed {
+    width: var(--sidebar-collapsed-width);
+  }
+
+  #logo-sidebar.sidebar-is-collapsed .sidebar-header,
+  #logo-sidebar.sidebar-is-collapsed .sidebar-content {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  #logo-sidebar.sidebar-is-collapsed .sidebar-brand {
+    justify-content: center;
+  }
+
+  #logo-sidebar.sidebar-is-collapsed .sidebar-item {
+    justify-content: center;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  #logo-sidebar.sidebar-is-collapsed .sidebar-item-text,
+  #logo-sidebar.sidebar-is-collapsed .sidebar-brand-text,
+  #logo-sidebar.sidebar-is-collapsed .sidebar-section-label,
+  #logo-sidebar.sidebar-is-collapsed .sidebar-item-addon {
+    display: none;
+  }
+
+  #logo-sidebar.sidebar-is-collapsed .sidebar-section-heading {
+    display: none;
+  }
+}
+
+@media (min-width: 640px) {
+  body.sidebar-collapsed .with-sidebar-offset {
+    padding-left: var(--sidebar-collapsed-width);
+  }
+
+  body.sidebar-collapsed .sm\\:ml-64 {
+    margin-left: var(--sidebar-collapsed-width) !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  body.sidebar-collapsed .with-sidebar-offset {
+    padding-left: 0;
+    margin-left: var(--sidebar-collapsed-width);
+    width: calc(100% - var(--sidebar-collapsed-width));
   }
 }
 `;
@@ -423,9 +489,12 @@ function baseDeclaration(base) {
     case 'ml-3': return 'margin-left: 0.75rem;';
     case 'ml-auto': return 'margin-left: auto;';
     case 'min-h-[70vh]': return 'min-height: 70vh;';
+    case 'min-w-[18rem]': return 'min-width: 18rem;';
+    case 'min-w-[22rem]': return 'min-width: 22rem;';
     case 'w-full': return 'width: 100%;';
     case 'w-auto': return 'width: auto;';
     case 'w-64': return 'width: 16rem;';
+    case 'w-80': return 'width: 20rem;';
     case 'w-10': return 'width: 2.5rem;';
     case 'w-6': return 'width: 1.5rem;';
     case 'w-5': return 'width: 1.25rem;';

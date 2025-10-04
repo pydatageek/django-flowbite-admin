@@ -16,6 +16,7 @@ from django.template.response import TemplateResponse
 from django.urls import NoReverseMatch, reverse
 from django.utils import timezone
 from django.utils.formats import date_format
+from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
 
 
@@ -270,6 +271,27 @@ class FlowbiteAdminSite(admin.AdminSite):
             .order_by("-action_time")[:limit]
         )
 
+    def get_topbar_notifications(self, request: HttpRequest, limit: int = 6) -> List[dict]:
+        """Return serialized notifications for the header dropdown."""
+
+        if not getattr(request, "user", None) or not request.user.is_authenticated:
+            return []
+
+        notifications: List[dict] = []
+        for entry in self.get_recent_actions(request, limit=limit):
+            localized = timezone.localtime(entry.action_time)
+            notifications.append(
+                {
+                    "id": entry.pk,
+                    "message": entry.get_change_message(),
+                    "url": entry.get_admin_url(),
+                    "timestamp": date_format(localized, format="SHORT_DATETIME_FORMAT"),
+                    "relative": timesince(localized),
+                }
+            )
+
+        return notifications
+
     def get_log_queryset(self):
         """Provide a shared queryset for admin log lookups."""
 
@@ -323,3 +345,10 @@ class FlowbiteAdminSite(admin.AdminSite):
 
         request.current_app = self.name
         return TemplateResponse(request, self.index_template or "admin/index.html", context)
+
+    def each_context(self, request: HttpRequest) -> dict:
+        """Inject extra context needed by all admin templates."""
+
+        context = super().each_context(request)
+        context.setdefault("topbar_notifications", self.get_topbar_notifications(request))
+        return context

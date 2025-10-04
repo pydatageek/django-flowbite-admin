@@ -1,9 +1,11 @@
 from django.contrib import admin
 
+from flowbite_admin import FlowbiteAdminSite
+
 from .models import Book
 
 
-class ProjectAdminSite(admin.AdminSite):
+class ProjectAdminSite(FlowbiteAdminSite):
     """Custom admin site used by the test project."""
 
     site_header = "Flowbite Admin"

@@ -4,6 +4,41 @@
 {% block extrastyle %}
   {{ block.super }}
   <link rel="stylesheet" href="{% static 'admin/css/dashboard.css' %}">
+  <style>
+    #dashboard-widgets[data-dashboard-editing="true"] .dashboard-widget {
+      border-style: dashed;
+      border-color: rgb(37 99 235);
+      box-shadow: none;
+    }
+    #dashboard-widgets[data-dashboard-editing="true"] .dashboard-widget__handle {
+      display: inline-flex;
+    }
+    .dashboard-widget__handle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      height: 2rem;
+      width: 2rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgb(226 232 240 / 1);
+      color: rgb(100 116 139 / 1);
+    }
+    .dark .dashboard-widget__handle {
+      border-color: rgb(71 85 105 / 1);
+      color: rgb(148 163 184 / 1);
+    }
+    .dashboard-widget__handle svg {
+      width: 1rem;
+      height: 1rem;
+    }
+    #dashboard-widgets [draggable="true"] {
+      cursor: grab;
+    }
+    #dashboard-widgets [data-dragging="true"] {
+      opacity: 0.6;
+      cursor: grabbing;
+    }
+  </style>
 {% endblock %}
 
 {% block coltype %}colMS mt-24 space-y-6 px-4 pb-12 sm:ml-64 sm:px-8{% endblock %}
@@ -15,61 +50,268 @@
 {% block content %}
   <div id="content-main" class="space-y-8">
     <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">{% translate 'Welcome back' %}</h1>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{% translate 'Choose an application to manage from the list below.' %}</p>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {% translate 'Review the latest activity, manage your widgets, and dive into your data.' %}
+          </p>
         </div>
-        <div class="flex items-center gap-2">
-          <form method="post" action="{% url 'admin:logout' %}" class="inline">
-            {% csrf_token %}
-            <button type="submit" class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">{% translate 'Log out' %}</button>
-          </form>
+        <div class="flex flex-wrap items-center gap-3">
+          {% if can_manage_widgets %}
+            <button type="button" data-dashboard-action="toggle" data-label-default="{% translate 'Manage layout' %}" data-label-active="{% translate 'Done arranging' %}"
+              class="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+              <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h8m-8 5h16" />
+              </svg>
+              <span data-dashboard-toggle-label>{% translate 'Manage layout' %}</span>
+            </button>
+            <button type="button" data-dashboard-action="reset"
+              class="hidden items-center gap-2 rounded-xl border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-white dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/40 dark:focus:ring-offset-gray-900">
+              <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              {% translate 'Reset layout' %}
+            </button>
+          {% endif %}
           {% if site_url %}
-            <a href="{{ site_url }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">{% translate 'View site' %}</a>
+            <a href="{{ site_url }}"
+              class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">
+              <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L21 10.5m0 0l-3.75 3.75M21 10.5H9" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75H7.5A2.25 2.25 0 005.25 9v9A2.25 2.25 0 007.5 20.25h9A2.25 2.25 0 0018.75 18v-4.5" />
+              </svg>
+              {% translate 'View site' %}
+            </a>
           {% endif %}
         </div>
       </div>
     </div>
 
-    <div class="grid gap-6 lg:grid-cols-[2fr,1fr]">
-      <div class="space-y-6">
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
-        </div>
-      </div>
-      <aside class="space-y-6">
-        <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{% translate 'Recent actions' %}</h2>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{% translate 'My actions' %}</p>
-          {% get_admin_log 10 as admin_log for_user user %}
-          {% if not admin_log %}
-            <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">{% translate 'None available' %}</p>
-          {% else %}
-            <ul class="mt-4 space-y-3">
-              {% for entry in admin_log %}
-                <li class="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700 {% if entry.is_addition %}bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-200{% elif entry.is_change %}bg-blue-50 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200{% elif entry.is_deletion %}bg-red-50 text-red-800 dark:bg-red-900/30 dark:text-red-200{% else %}bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-200{% endif %}">
-                  <span class="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    {% if entry.is_addition %}{% translate 'Added' %}{% elif entry.is_change %}{% translate 'Changed' %}{% elif entry.is_deletion %}{% translate 'Deleted' %}{% endif %}
-                  </span>
-                  {% if entry.is_deletion or not entry.get_admin_url %}
-                    <span class="font-medium">{{ entry.object_repr }}</span>
-                  {% else %}
-                    <a class="font-medium hover:underline" href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
-                  {% endif %}
-                  <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {% if entry.content_type %}
-                      {% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}
+    <div id="dashboard-widgets" class="grid gap-6 xl:grid-cols-12" data-dashboard-grid data-dashboard-save-url="{{ request.path }}" data-dashboard-can-edit="{{ can_manage_widgets|yesno:'true,false' }}">
+      {% for widget in widget_layout %}
+        {% if widget == 'kpi-cards' %}
+          <section class="dashboard-widget xl:col-span-12 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition dark:border-gray-700 dark:bg-gray-800" data-widget-id="kpi-cards">
+            <div class="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{% translate 'Key metrics' %}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{% translate 'Stay on top of the most important data points for your project.' %}</p>
+              </div>
+              {% if can_manage_widgets %}
+                <span class="dashboard-widget__handle" role="button" aria-label="{% translate 'Drag to reorder widget' %}">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5h.008v.008H8.25V7.5zm0 4.5h.008v.008H8.25V12zm0 4.5h.008v.008H8.25V16.5zm7.5-9h.008v.008h-.008V7.5zm0 4.5h.008v.008h-.008V12zm0 4.5h.008v.008h-.008V16.5z" />
+                  </svg>
+                </span>
+              {% endif %}
+            </div>
+            <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {% for card in kpi_cards %}
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-700 dark:bg-gray-900/60">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <p class="text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">{{ card.badge }}</p>
+                      <h3 class="mt-2 text-lg font-semibold text-gray-900 dark:text-white">{{ card.title }}</h3>
+                    </div>
+                    {% if card.change is not None %}
+                      <span class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold {% if card.change >= 0 %}bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-200{% else %}bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200{% endif %}">
+                        {% if card.change >= 0 %}+{% endif %}{{ card.change|floatformat:1 }}%
+                      </span>
                     {% else %}
-                      {% translate 'Unknown content' %}
+                      <span class="rounded-full bg-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">&mdash;</span>
                     {% endif %}
                   </div>
-                </li>
+                  <p class="mt-6 text-3xl font-semibold text-gray-900 dark:text-white">{{ card.value }}</p>
+                </div>
+              {% empty %}
+                <p class="text-sm text-gray-500 dark:text-gray-400">{% translate 'No metrics are available yet.' %}</p>
               {% endfor %}
-            </ul>
-          {% endif %}
-        </div>
-      </aside>
+            </div>
+          </section>
+        {% elif widget == 'activity-chart' %}
+          <section class="dashboard-widget xl:col-span-7 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition dark:border-gray-700 dark:bg-gray-800" data-widget-id="activity-chart">
+            <div class="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{% translate 'Activity overview' %}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{% translate 'Track additions, edits, and deletions over the past week.' %}</p>
+              </div>
+              {% if can_manage_widgets %}
+                <span class="dashboard-widget__handle" role="button" aria-label="{% translate 'Drag to reorder widget' %}">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5h.008v.008H8.25V7.5zm0 4.5h.008v.008H8.25V12zm0 4.5h.008v.008H8.25V16.5zm7.5-9h.008v.008h-.008V7.5zm0 4.5h.008v.008h-.008V12zm0 4.5h.008v.008h-.008V16.5z" />
+                  </svg>
+                </span>
+              {% endif %}
+            </div>
+            <div class="relative">
+              <canvas id="dashboard-activity-chart" data-chart-key="activity" class="h-72 w-full"></canvas>
+            </div>
+          </section>
+        {% elif widget == 'app-list' %}
+          <section class="dashboard-widget xl:col-span-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition dark:border-gray-700 dark:bg-gray-800" data-widget-id="app-list">
+            <div class="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{% translate 'Applications' %}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{% translate 'Jump into any section of the administration.' %}</p>
+              </div>
+              {% if can_manage_widgets %}
+                <span class="dashboard-widget__handle" role="button" aria-label="{% translate 'Drag to reorder widget' %}">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5h.008v.008H8.25V7.5zm0 4.5h.008v.008H8.25V12zm0 4.5h.008v.008H8.25V16.5zm7.5-9h.008v.008h-.008V7.5zm0 4.5h.008v.008h-.008V12zm0 4.5h.008v.008h-.008V16.5z" />
+                  </svg>
+                </span>
+              {% endif %}
+            </div>
+            {% if app_list %}
+              <ul class="space-y-4">
+                {% for app in app_list %}
+                  <li class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/60">
+                    <div class="flex items-center justify-between gap-3">
+                      <div>
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">
+                          {% if app.app_url %}
+                            <a href="{{ app.app_url }}" class="hover:underline">{{ app.name }}</a>
+                          {% else %}
+                            {{ app.name }}
+                          {% endif %}
+                        </h3>
+                        <p class="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">{{ app.app_label }}</p>
+                      </div>
+                      <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-200">{{ app.models|length }} {% translate 'models' %}</span>
+                    </div>
+                    {% if app.models %}
+                      <div class="mt-3 space-y-2 text-sm text-gray-700 dark:text-gray-200">
+                        {% for model in app.models %}
+                          <div class="flex items-center justify-between gap-2">
+                            <div class="truncate">
+                              {% if model.admin_url %}
+                                <a href="{{ model.admin_url }}" class="font-medium hover:underline">{{ model.name }}</a>
+                              {% else %}
+                                <span class="font-medium">{{ model.name }}</span>
+                              {% endif %}
+                              {% if model.add_url %}
+                                <a href="{{ model.add_url }}" class="ml-2 text-xs font-semibold text-blue-600 hover:underline dark:text-blue-400">{% translate 'Add' %}</a>
+                              {% endif %}
+                            </div>
+                            {% if model.view_only %}
+                              <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">{% translate 'Read only' %}</span>
+                            {% endif %}
+                          </div>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-sm text-gray-500 dark:text-gray-400">{% translate 'No applications are registered with this admin site.' %}</p>
+            {% endif %}
+          </section>
+        {% elif widget == 'top-models' %}
+          <section class="dashboard-widget xl:col-span-7 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition dark:border-gray-700 dark:bg-gray-800" data-widget-id="top-models">
+            <div class="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{% translate 'Most populated models' %}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{% translate 'See where most of your data lives.' %}</p>
+              </div>
+              {% if can_manage_widgets %}
+                <span class="dashboard-widget__handle" role="button" aria-label="{% translate 'Drag to reorder widget' %}">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5h.008v.008H8.25V7.5zm0 4.5h.008v.008H8.25V12zm0 4.5h.008v.008H8.25V16.5zm7.5-9h.008v.008h-.008V7.5zm0 4.5h.008v.008h-.008V12zm0 4.5h.008v.008h-.008V16.5z" />
+                  </svg>
+                </span>
+              {% endif %}
+            </div>
+            {% if top_models %}
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-left text-sm dark:divide-gray-700">
+                  <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:bg-gray-900/40 dark:text-gray-400">
+                    <tr>
+                      <th scope="col" class="px-4 py-3">{% translate 'Model' %}</th>
+                      <th scope="col" class="px-4 py-3 text-right">{% translate 'Objects' %}</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    {% for model in top_models %}
+                      <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/60">
+                        <td class="px-4 py-3">
+                          <div class="font-medium text-gray-900 dark:text-white">
+                            {% if model.admin_url %}
+                              <a href="{{ model.admin_url }}" class="hover:underline">{{ model.verbose_name }}</a>
+                            {% else %}
+                              {{ model.verbose_name }}
+                            {% endif %}
+                          </div>
+                          <p class="text-xs uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">{{ model.app_label }}</p>
+                        </td>
+                        <td class="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">{{ model.count }}</td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            {% else %}
+              <p class="text-sm text-gray-500 dark:text-gray-400">{% translate 'We could not find any populated models yet.' %}</p>
+            {% endif %}
+          </section>
+        {% elif widget == 'recent-actions' %}
+          <section class="dashboard-widget xl:col-span-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition dark:border-gray-700 dark:bg-gray-800" data-widget-id="recent-actions">
+            <div class="mb-6 flex items-center justify-between gap-4">
+              <div>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{% translate 'Your recent actions' %}</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{% translate 'A personal feed of changes you have recently made.' %}</p>
+              </div>
+              {% if can_manage_widgets %}
+                <span class="dashboard-widget__handle" role="button" aria-label="{% translate 'Drag to reorder widget' %}">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 7.5h.008v.008H8.25V7.5zm0 4.5h.008v.008H8.25V12zm0 4.5h.008v.008H8.25V16.5zm7.5-9h.008v.008h-.008V7.5zm0 4.5h.008v.008h-.008V12zm0 4.5h.008v.008h-.008V16.5z" />
+                  </svg>
+                </span>
+              {% endif %}
+            </div>
+            {% if recent_logs %}
+              <ul class="space-y-3">
+                {% for entry in recent_logs %}
+                  <li class="rounded-xl border border-gray-200 p-4 text-sm dark:border-gray-700 dark:bg-gray-900/60">
+                    <div class="flex items-center justify-between gap-3">
+                      <span class="text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">
+                        {% if entry.is_addition %}{% translate 'Added' %}{% elif entry.is_change %}{% translate 'Changed' %}{% elif entry.is_deletion %}{% translate 'Deleted' %}{% endif %}
+                      </span>
+                      <span class="text-xs text-gray-500 dark:text-gray-400">{{ entry.action_time|date:"M j, Y H:i" }}</span>
+                    </div>
+                    <div class="mt-2 font-medium text-gray-900 dark:text-white">
+                      {% if entry.is_deletion or not entry.get_admin_url %}
+                        {{ entry.object_repr }}
+                      {% else %}
+                        <a href="{{ entry.get_admin_url }}" class="hover:underline">{{ entry.object_repr }}</a>
+                      {% endif %}
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      {% if entry.content_type %}
+                        {% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}
+                      {% else %}
+                        {% translate 'Unknown content' %}
+                      {% endif %}
+                    </p>
+                    {% if entry.get_change_message %}
+                      <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">{{ entry.get_change_message }}</p>
+                    {% endif %}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="text-sm text-gray-500 dark:text-gray-400">{% translate 'No activity recorded for your account yet.' %}</p>
+            {% endif %}
+          </section>
+        {% endif %}
+      {% endfor %}
     </div>
   </div>
+{% endblock %}
+
+{% block extrajs %}
+  {{ block.super }}
+  <script src="{% static 'flowbite_admin/js/chart.umd.min.js' %}" defer></script>
+  {{ chart_config|json_script:"dashboard-chart-data" }}
+  <script src="{% static 'flowbite_admin/js/dashboard.js' %}" defer></script>
 {% endblock %}

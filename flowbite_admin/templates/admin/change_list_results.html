@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n changelist_helpers %}
 {% if result_hidden_fields %}
   <div class="hidden">
     {% for item in result_hidden_fields %}{{ item }}{% endfor %}
@@ -8,7 +8,7 @@
   <div class="results overflow-hidden rounded-lg">
     <table
       id="result_list"
-      class="min-w-full bg-white text-left text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300 [&_input#action-toggle]:h-4 [&_input#action-toggle]:w-4 [&_input#action-toggle]:rounded [&_input#action-toggle]:border-gray-300 [&_input#action-toggle]:text-blue-600 [&_input#action-toggle]:focus:ring-blue-500 [&_td.action-checkbox>input]:h-4 [&_td.action-checkbox>input]:w-4 [&_td.action-checkbox>input]:rounded [&_td.action-checkbox>input]:border-gray-300 [&_td.action-checkbox>input]:text-blue-600 [&_td.action-checkbox>input]:focus:ring-blue-500 [&_td]:align-middle [&_th]:align-middle [&_th.action-checkbox-column]:w-12 [&_th.action-checkbox-column]:px-4 [&_th.action-checkbox-column]:text-center [&_td.action-checkbox]:w-12 [&_td.action-checkbox]:px-4 [&_td.action-checkbox]:text-center"
+      class="min-w-full bg-white text-left text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300 [&_input#action-toggle]:h-4 [&_input#action-toggle]:w-4 [&_input#action-toggle]:rounded [&_input#action-toggle]:border-gray-300 [&_input#action-toggle]:text-blue-600 [&_input#action-toggle]:focus:ring-blue-500 [&_td.action-checkbox>input]:h-4 [&_td.action-checkbox>input]:w-4 [&_td.action-checkbox>input]:rounded [&_td.action-checkbox>input]:border-gray-300 [&_td.action-checkbox>input]:text-blue-600 [&_td.action-checkbox>input]:focus:ring-blue-500 [&_td]:align-middle [&_th]:align-middle [&_th.action-checkbox-column]:w-12 [&_th.action-checkbox-column]:px-4 [&_th.action-checkbox-column]:text-center [&_td.action-checkbox]:w-12 [&_td.action-checkbox]:px-4 [&_td.action-checkbox]:text-center [&_th.action-menu-column]:w-14 [&_th.action-menu-column]:px-4 [&_th.action-menu-column]:text-right [&_td.action-menu-column]:w-14 [&_td.action-menu-column]:px-4 [&_td.action-menu-column]:text-right"
     >
       <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:bg-gray-700 dark:text-gray-300">
         <tr>
@@ -82,19 +82,91 @@
               </th>
             {% endwith %}
           {% endfor %}
+          <th scope="col" class="action-menu-column">
+            <span class="sr-only">{% translate "Actions" %}</span>
+          </th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-200 dark:divide-gray-700 [&_tr]:bg-white [&_tr]:transition-colors hover:[&_tr]:bg-gray-50 dark:[&_tr]:bg-gray-800 dark:hover:[&_tr]:bg-gray-700/60">
-        {% for result in results %}
-          {% if result.form and result.form.non_field_errors %}
+        {% for row in results|changelist_rows:cl %}
+          {% if row.form and row.form.non_field_errors %}
             <tr>
-              <td colspan="{{ result|length }}" class="bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-200">
-                {{ result.form.non_field_errors }}
+              <td colspan="{{ row.cells|length|add:'1' }}" class="bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-200">
+                {{ row.form.non_field_errors }}
               </td>
             </tr>
           {% endif %}
           <tr>
-            {% for item in result %}{{ item }}{% endfor %}
+            {% for cell in row.cells %}{{ cell }}{% endfor %}
+            <td class="action-menu-column">
+              {% if row.actions %}
+                <div class="flex justify-end">
+                  <div class="relative inline-flex text-left">
+                    <button
+                      type="button"
+                      id="{{ row.dropdown_id }}"
+                      data-dropdown-toggle="{{ row.menu_id }}"
+                      data-dropdown-placement="bottom-end"
+                      class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-gray-100"
+                    >
+                      <span class="sr-only">{% translate "Open row actions" %}</span>
+                      <svg
+                        aria-hidden="true"
+                        class="h-5 w-5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 5a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 9a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 9a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" />
+                      </svg>
+                    </button>
+                    <div
+                      id="{{ row.menu_id }}"
+                      class="z-20 hidden min-w-[10rem] divide-y divide-gray-100 rounded-lg border border-gray-100 bg-white py-1 text-sm shadow-lg focus:outline-none dark:divide-gray-700 dark:border-gray-600 dark:bg-gray-700"
+                      role="menu"
+                      aria-labelledby="{{ row.dropdown_id }}"
+                    >
+                      <ul class="py-1" role="none">
+                        {% for action in row.actions %}
+                          <li role="none">
+                            <a
+                              role="menuitem"
+                              href="{{ action.url }}"
+                              class="flex items-center gap-2 px-4 py-2 text-gray-700 transition hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-600/60 dark:hover:text-white{% if action.danger %} text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300{% endif %}"
+                              {% if action.target %}target="{{ action.target }}"{% endif %}
+                              {% if action.rel %}rel="{{ action.rel }}"{% endif %}
+                            >
+                              {{ action.label }}
+                              {% if action.external %}
+                                <svg
+                                  aria-hidden="true"
+                                  class="h-3.5 w-3.5 text-gray-400"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M18 13v6a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                                  <path d="M15 3h6v6" />
+                                  <path d="M10 14L21 3" />
+                                </svg>
+                              {% endif %}
+                            </a>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              {% else %}
+                <span class="block text-xs text-gray-400 dark:text-gray-500">{% translate "No actions available" %}</span>
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>

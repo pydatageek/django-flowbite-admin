@@ -1,9 +1,13 @@
 """Custom ChangeList implementation with advanced filtering support."""
 from __future__ import annotations
 
-from typing import Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Tuple
 
 from django.contrib.admin.views.main import ALL_VAR, PAGE_VAR, ChangeList
+from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
+from django.contrib.admin.utils import quote
+from django.urls import NoReverseMatch, reverse
+from django.utils.translation import gettext_lazy as _
 
 from .forms import AdvancedFilterForm
 
@@ -71,6 +75,107 @@ class AdvancedChangeList(ChangeList):
     # ------------------------------------------------------------------
     # Template helpers
     # ------------------------------------------------------------------
+    def get_result_rows(self, results: Iterable[Any]) -> List[Dict[str, Any]]:
+        """Pair the rendered result rows with their objects and actions."""
+
+        object_list = list(self.result_list)
+        rendered_rows = list(results)
+        rows: List[Dict[str, Any]] = []
+        for obj, rendered in zip(object_list, rendered_rows):
+            pk_value = getattr(obj, self.pk_attname)
+            quoted_pk = quote(pk_value)
+            dropdown_id = f"{self.opts.model_name}-row-actions-{quoted_pk}"
+            menu_id = f"{dropdown_id}-menu"
+            rows.append(
+                {
+                    "cells": rendered,
+                    "form": getattr(rendered, "form", None),
+                    "object": obj,
+                    "actions": self.get_row_actions(obj),
+                    "dropdown_id": dropdown_id,
+                    "menu_id": menu_id,
+                }
+            )
+        return rows
+
+    def get_row_actions(self, obj) -> List[Dict[str, Any]]:
+        """Return the actions available for ``obj`` in the change list."""
+
+        request = getattr(self, "request", None)
+        if request is None:
+            return []
+
+        opts = self.opts
+        actions: List[Dict[str, Any]] = []
+
+        change_url: str | None = None
+        try:
+            change_url = self.url_for_result(obj)
+        except NoReverseMatch:
+            change_url = None
+        else:
+            change_url = add_preserved_filters(
+                {"preserved_filters": self.preserved_filters, "opts": opts},
+                change_url,
+            )
+
+        view_on_site_url = self.model_admin.get_view_on_site_url(obj)
+        can_view = self.model_admin.has_view_permission(request, obj)
+        can_change = self.model_admin.has_change_permission(request, obj)
+
+        if can_view:
+            external = bool(view_on_site_url)
+            view_url = view_on_site_url or change_url
+            # Avoid duplicating the edit action when "view" is the same URL.
+            if view_url and (external or not can_change):
+                action: Dict[str, Any] = {
+                    "key": "view",
+                    "label": _("View"),
+                    "url": view_url,
+                }
+                if external:
+                    action.update({
+                        "external": True,
+                        "target": "_blank",
+                        "rel": "noreferrer noopener",
+                    })
+                actions.append(action)
+
+        if can_change and change_url:
+            actions.append(
+                {
+                    "key": "edit",
+                    "label": _("Edit"),
+                    "url": change_url,
+                }
+            )
+
+        if self.model_admin.has_delete_permission(request, obj):
+            try:
+                delete_url = reverse(
+                    f"admin:{opts.app_label}_{opts.model_name}_delete",
+                    args=(quote(getattr(obj, self.pk_attname)),),
+                    current_app=self.model_admin.admin_site.name,
+                )
+            except NoReverseMatch:
+                delete_url = None
+            else:
+                delete_url = add_preserved_filters(
+                    {"preserved_filters": self.preserved_filters, "opts": opts},
+                    delete_url,
+                )
+            if delete_url:
+                actions.append(
+                    {
+                        "key": "delete",
+                        "label": _("Delete"),
+                        "url": delete_url,
+                        "danger": True,
+                    }
+                )
+
+        return actions
+
     @property
     def advanced_filter_preserved_params(self) -> Iterable[Tuple[str, str]]:
         preserved: List[Tuple[str, str]] = []

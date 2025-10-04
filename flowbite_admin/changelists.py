@@ -1,7 +1,7 @@
 """Custom ChangeList implementation with advanced filtering support."""
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Set, Tuple
 
 from django.contrib.admin.views.main import ALL_VAR, PAGE_VAR, ChangeList
 from django.contrib.admin.templatetags.admin_urls import add_preserved_filters
@@ -20,6 +20,8 @@ class AdvancedChangeList(ChangeList):
     def __init__(self, *args, **kwargs) -> None:
         self._advanced_filter_form: AdvancedFilterForm | None = None
         self._advanced_lookup_params: Dict[str, List[object]] = {}
+        self._advanced_query_lookups: Dict[str, str] = {}
+        self._advanced_lookup_only: Set[str] = set()
         super().__init__(*args, **kwargs)
         # ``ChangeList.__init__`` calls ``get_queryset`` which initialises the
         # advanced filter form. Expose it for templates after initialisation.
@@ -43,8 +45,28 @@ class AdvancedChangeList(ChangeList):
         self._advanced_filter_form = form
         if not form.is_valid():
             self._advanced_lookup_params = {}
+            self._advanced_query_lookups = {}
+            self._advanced_lookup_only = set()
             return
         self._advanced_lookup_params = form.get_lookup_params()
+        self._advanced_query_lookups = {}
+        for field_name, value in form.cleaned_data.items():
+            if value in (None, "", []):
+                continue
+            lookup = getattr(form, "_lookup_map", {}).get(field_name)
+            if lookup is None:
+                continue
+            self._advanced_query_lookups[field_name] = lookup.as_lookup
+        request_params = getattr(request, "GET", {})
+        if hasattr(request_params, "keys"):
+            request_keys = list(request_params.keys())
+        else:
+            request_keys = list(request_params)
+        self._advanced_lookup_only = {
+            lookup
+            for lookup in self._advanced_lookup_params
+            if not any(param.startswith(lookup) for param in request_keys)
+        }
         # Synchronise the computed ORM lookups with the parameters Django uses
         # when building query strings so pagination, ordering, and clearing
         # filters continue to work as expected.
@@ -191,14 +213,14 @@ class AdvancedChangeList(ChangeList):
 
     @property
     def advanced_filter_reset_query(self) -> str:
-        remove_keys = set(self._advanced_lookup_params.keys())
         form = self.get_advanced_filter_form()
         request = getattr(self, "request", None)
+        remove_keys: List[str] = []
         if form is not None and request is not None:
             for name in form.get_query_parameter_names():
                 if name in request.GET:
-                    remove_keys.add(name)
-        return self.get_query_string(remove=list(remove_keys))
+                    remove_keys.append(name)
+        return self.get_query_string(remove=remove_keys)
 
     def get_query_string(self, new_params=None, remove=None):  # type: ignore[override]
         if remove is None:
@@ -207,8 +229,17 @@ class AdvancedChangeList(ChangeList):
             remove = list(remove)
         form = self.get_advanced_filter_form()
         prefix = getattr(form, "param_prefix", "") if form else ""
+        if form is not None and remove:
+            for key in list(remove):
+                if prefix and key.startswith(prefix):
+                    lookup_key = self._advanced_query_lookups.get(key)
+                    if lookup_key and lookup_key in self._advanced_lookup_only:
+                        remove.append(lookup_key)
         if prefix:
             for key in list(remove):
                 if not key.startswith(prefix):
                     remove.append(f"{prefix}{key}")
+        if remove:
+            seen = set()
+            remove = [key for key in remove if not (key in seen or seen.add(key))]
         return super().get_query_string(new_params=new_params, remove=remove)

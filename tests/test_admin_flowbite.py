@@ -1,6 +1,14 @@
 from __future__ import annotations
 
+import os
+from datetime import date
 from html.parser import HTMLParser
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "tests.settings")
+
+import django
+
+django.setup()
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
@@ -68,6 +76,30 @@ class AdminFlowbiteTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "rounded-2xl border border-gray-200")
         self.assertContains(response, "flowbite-admin.css")
+
+    def test_change_list_displays_advanced_filter_form(self) -> None:
+        self.login()
+        response = self.client.get(reverse("admin:admin_tests_book_changelist"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "data-accordion=\"collapse\"")
+        self.assertContains(response, "name=\"af__title__contains\"")
+
+    def test_advanced_filters_limit_queryset(self) -> None:
+        extra = Book.objects.create(title="Flowbuddy", author="Helper", published=date(2024, 1, 1))
+        other = Book.objects.create(title="Library Almanac", author="Archivist", published=date(2020, 5, 1))
+
+        self.login()
+        response = self.client.get(
+            reverse("admin:admin_tests_book_changelist"),
+            {"af__title__contains": "Flowbuddy", "af__published__gt": "2021-01-01"},
+        )
+        self.assertEqual(response.status_code, 200)
+        cl = response.context["cl"]
+        titles = list(cl.queryset.values_list("title", flat=True))
+        self.assertIn(extra.title, titles)
+        self.assertNotIn(other.title, titles)
+        self.assertContains(response, 'value="Flowbuddy"')
+        self.assertContains(response, 'value="2021-01-01"')
 
     def test_change_form_has_flowbite_form_controls(self) -> None:
         self.login()

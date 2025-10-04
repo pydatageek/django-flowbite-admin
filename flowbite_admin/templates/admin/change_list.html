@@ -88,6 +88,58 @@
 
               {% block result_list %}
                 <div class="space-y-4">
+                  {% if cl.advanced_filter_form %}
+                    {% with advanced_form=cl.advanced_filter_form %}
+                      {% with advanced_open=advanced_form.is_bound %}
+                    <div class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                      <div class="border-b border-gray-200 px-4 py-2 dark:border-gray-700">
+                        <div id="advanced-filter-accordion" data-accordion="collapse" data-active-classes="bg-gray-50 dark:bg-gray-900/40 text-gray-900 dark:text-white">
+                          <h2 id="advanced-filter-heading">
+                            <button type="button" class="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-gray-200 dark:hover:bg-gray-900/60" data-accordion-target="#advanced-filter-body" aria-expanded="{{ advanced_open|yesno:'true,false' }}" aria-controls="advanced-filter-body">
+                              <span>{% translate "Advanced filters" %}</span>
+                              <svg data-accordion-icon class="h-5 w-5 shrink-0 text-gray-500 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                              </svg>
+                            </button>
+                          </h2>
+                          <div id="advanced-filter-body" class="{% if not advanced_open %}hidden{% endif %}" aria-labelledby="advanced-filter-heading">
+                            <div class="space-y-4 px-2 py-4">
+                              <form method="get" class="space-y-4">
+                                {% for key, value in cl.advanced_filter_preserved_params %}
+                                  <input type="hidden" name="{{ key }}" value="{{ value }}">
+                                {% endfor %}
+                                {% if advanced_form.non_field_errors %}
+                                  <div class="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/30 dark:text-red-200">
+                                    {{ advanced_form.non_field_errors }}
+                                  </div>
+                                {% endif %}
+                                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                  {% for field in advanced_form.visible_fields %}
+                                    <div>
+                                      <label for="{{ field.id_for_label }}" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ field.label }}</label>
+                                      {{ field }}
+                                      {% if field.help_text %}
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ field.help_text }}</p>
+                                      {% endif %}
+                                      {% if field.errors %}
+                                        <p class="mt-1 text-xs text-red-600 dark:text-red-400">{{ field.errors|striptags }}</p>
+                                      {% endif %}
+                                    </div>
+                                  {% endfor %}
+                                </div>
+                                <div class="flex flex-wrap items-center justify-end gap-2">
+                                  <a href="{{ cl.advanced_filter_reset_query }}" class="inline-flex items-center rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-900/60">{% translate "Reset" %}</a>
+                                  <button type="submit" class="inline-flex items-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900">{% translate "Apply filters" %}</button>
+                                </div>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                      {% endwith %}
+                    {% endwith %}
+                  {% endif %}
                   {% if action_form and actions_on_top and cl.show_admin_actions %}
                     <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
                       {% admin_actions %}

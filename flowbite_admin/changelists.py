@@ -191,8 +191,14 @@ class AdvancedChangeList(ChangeList):
 
     @property
     def advanced_filter_reset_query(self) -> str:
-        keys = list(self.get_filters_params().keys())
-        return self.get_query_string(remove=keys)
+        remove_keys = set(self._advanced_lookup_params.keys())
+        form = self.get_advanced_filter_form()
+        request = getattr(self, "request", None)
+        if form is not None and request is not None:
+            for name in form.get_query_parameter_names():
+                if name in request.GET:
+                    remove_keys.add(name)
+        return self.get_query_string(remove=list(remove_keys))
 
     def get_query_string(self, new_params=None, remove=None):  # type: ignore[override]
         if remove is None:

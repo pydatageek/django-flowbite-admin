@@ -105,6 +105,64 @@ class AdminFlowbiteTests(TestCase):
         self.assertContains(response, 'value="Flowbuddy"')
         self.assertContains(response, 'value="2021-01-01"')
 
+    def test_advanced_filter_reset_preserves_sidebar_filters(self) -> None:
+        published_on = date(2024, 2, 1)
+        matching = Book.objects.create(title="Flowbuddy", author="Helper", published=published_on)
+        sibling = Book.objects.create(title="Flow State", author="Helper", published=published_on)
+        different_date = Book.objects.create(title="Library Almanac", author="Archivist", published=date(2023, 5, 1))
+
+        self.login()
+        changelist_url = reverse("admin:admin_tests_book_changelist")
+        response = self.client.get(
+            changelist_url,
+            {
+                "published__exact": published_on.isoformat(),
+                "af__title__contains": "Flowbuddy",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, matching.title)
+        self.assertNotContains(response, sibling.title)
+
+        class _ResetLinkParser(HTMLParser):
+            def __init__(self) -> None:
+                super().__init__()
+                self.href: str | None = None
+                self._current_href: str | None = None
+                self._in_anchor = False
+
+            def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+                if tag != "a":
+                    return
+                self._in_anchor = True
+                self._current_href = dict(attrs).get("href")
+
+            def handle_endtag(self, tag: str) -> None:
+                if tag != "a":
+                    return
+                self._in_anchor = False
+                self._current_href = None
+
+            def handle_data(self, data: str) -> None:
+                if self._in_anchor and data.strip() == "Reset":
+                    self.href = self._current_href
+
+        parser = _ResetLinkParser()
+        parser.feed(response.content.decode())
+        self.assertIsNotNone(parser.href, "Reset link was not found in the changelist response")
+        reset_query = parser.href or ""
+
+        reset_response = self.client.get(f"{changelist_url}{reset_query}")
+        self.assertEqual(reset_response.status_code, 200)
+        self.assertContains(reset_response, matching.title)
+        self.assertContains(reset_response, sibling.title)
+        self.assertNotContains(reset_response, different_date.title)
+        self.assertNotContains(reset_response, 'value="Flowbuddy"')
+        self.assertEqual(
+            reset_response.wsgi_request.GET.get("published__exact"),
+            published_on.isoformat(),
+        )
+
     def test_change_form_has_flowbite_form_controls(self) -> None:
         self.login()
         url = reverse("admin:admin_tests_book_change", args=[self.book.pk])

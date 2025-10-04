@@ -54,11 +54,41 @@
         <input type="search" id="topbar-search" name="q" placeholder="{% translate 'Search' %}" class="topbar-search__input" />
       </form>
       <div class="topbar-icon-group">
-        <button type="button" class="topbar-icon-button" aria-label="{% translate 'Show notifications' %}">
-          <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-        </button>
+        <div class="relative">
+          <button type="button" id="notifications-menu-button" data-dropdown-toggle="notifications-menu" data-dropdown-placement="bottom-end"
+            class="topbar-icon-button" aria-haspopup="true" aria-expanded="false" aria-label="{% translate 'Show notifications' %}">
+            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+          </button>
+          <div id="notifications-menu" class="absolute right-0 z-40 mt-3 hidden w-72 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl dark:border-gray-700 dark:bg-gray-800"
+            role="menu" aria-labelledby="notifications-menu-button">
+            <div class="border-b border-gray-100 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800/70">
+              <p class="text-xs font-semibold uppercase tracking-[0.3em] text-gray-400 dark:text-gray-500">{% translate 'Notifications' %}</p>
+            </div>
+            <ul class="list-none divide-y divide-gray-100 bg-white text-sm text-gray-700 dark:divide-gray-700 dark:bg-gray-800 dark:text-gray-200">
+              {% for notification in topbar_notifications %}
+                <li class="px-4 py-3">
+                  {% if notification.url %}
+                    <a href="{{ notification.url }}" class="block rounded-lg px-3 py-2 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-gray-700/70 dark:hover:text-white">
+                      <p class="text-sm font-medium text-gray-900 dark:text-white">{{ notification.message }}</p>
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" title="{{ notification.timestamp }}">{{ notification.relative }} {% translate 'ago' %}</p>
+                    </a>
+                  {% else %}
+                    <div class="rounded-lg px-3 py-2">
+                      <p class="text-sm font-medium text-gray-900 dark:text-white">{{ notification.message }}</p>
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400" title="{{ notification.timestamp }}">{{ notification.relative }} {% translate 'ago' %}</p>
+                    </div>
+                  {% endif %}
+                </li>
+              {% empty %}
+                <li class="px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                  {% translate 'You have no notifications yet.' %}
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
         <button type="button" class="topbar-icon-button" data-action="toggle-fullscreen"
           data-fullscreen-label-enter="{% translate 'Enter fullscreen' %}"
           data-fullscreen-label-exit="{% translate 'Exit fullscreen' %}"
